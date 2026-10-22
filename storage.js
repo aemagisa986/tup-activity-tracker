@@ -120,8 +120,21 @@ class PgStore {
   async close() { await this.pool.end(); }
 }
 
-function openStore({ databaseUrl, dataDir }) {
-  return databaseUrl ? new PgStore(databaseUrl) : new FileStore(dataDir);
+/* Accepts the connection string the way people tend to paste it: Neon shows it inside a
+   psql command (psql 'postgresql://…'), and copies often carry quotes or a trailing space. */
+function cleanDatabaseUrl(raw) {
+  let s = String(raw || "").trim();
+  if (!s) return "";
+  const m = s.match(/postgres(?:ql)?:\/\/[^\s'"]+/i);
+  if (!m) throw new Error("DATABASE_URL doesn't look like a PostgreSQL connection string. It should start with postgresql:// — in Neon, click Connect and copy only the connection string, not the psql command.");
+  s = m[0];
+  if (!/@[^/]+\//.test(s)) throw new Error("DATABASE_URL is missing the host or database name. Copy the full connection string from Neon's Connect dialog again.");
+  return s;
 }
 
-module.exports = { openStore, emptyState, getRecord, allRecords };
+function openStore({ databaseUrl, dataDir }) {
+  const url = cleanDatabaseUrl(databaseUrl);
+  return url ? new PgStore(url) : new FileStore(dataDir);
+}
+
+module.exports = { openStore, cleanDatabaseUrl, emptyState, getRecord, allRecords };

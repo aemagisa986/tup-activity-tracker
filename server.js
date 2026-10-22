@@ -468,13 +468,23 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+function dbHint(msg) {
+  if (/password authentication failed/i.test(msg)) return "The database password in DATABASE_URL is wrong. In Neon, click Connect, copy the connection string again (with the password shown), and paste it into DATABASE_URL.";
+  if (/ENOTFOUND|EAI_AGAIN/i.test(msg)) return "The database host in DATABASE_URL can't be found. Copy the connection string from Neon's Connect dialog again.";
+  if (/does not exist/i.test(msg)) return "The database name in DATABASE_URL doesn't exist. Copy the connection string from Neon's Connect dialog again.";
+  if (/timeout|ETIMEDOUT|ECONNREFUSED/i.test(msg)) return "The database didn't answer. Check that the Neon project is active and DATABASE_URL is complete.";
+  if (/SSL|certificate/i.test(msg)) return "The secure connection to the database failed. Make sure DATABASE_URL ends with ?sslmode=require.";
+  return "Check DATABASE_URL (or the data folder) and restart.";
+}
+
 async function start() {
-  store = openStore({ databaseUrl: DATABASE_URL, dataDir: DATA_DIR });
+  try { store = openStore({ databaseUrl: DATABASE_URL, dataDir: DATA_DIR }); }
+  catch (e) { console.error("Can't start: " + e.message); process.exit(1); }
   for (let attempt = 1; ; attempt++) {
     try { state = await store.load(); break; }
     catch (e) {
       console.error(`Couldn't open ${store.describe()} (attempt ${attempt}): ${e.message}`);
-      if (attempt >= 5) { console.error("Giving up. Check DATABASE_URL (or the data folder) and restart."); process.exit(1); }
+      if (attempt >= 5) { console.error("Giving up. " + dbHint(e.message)); process.exit(1); }
       await sleep(3000 * attempt);
     }
   }
