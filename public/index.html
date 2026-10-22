@@ -743,7 +743,7 @@ function renderNav(){
   const m = myDoc();
   const nm = (m && m.fullName) || state.me.name || "You";
   const initials = nm.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join("");
-  $("#who").innerHTML = state.boot === "ok" && state.me.id ? `<span class="avatar" aria-hidden="true">${esc(initials)}</span><div><div class="wn"></div><div class="wr">${state.isAdmin ? "Administrator" : "Project user"}</div></div>
+  $("#who").innerHTML = state.boot === "ok" && state.me.id ? `<span class="avatar" aria-hidden="true">${esc(initials)}</span><div><div class="wn"></div><div class="wr">${state.isAdmin ? "Administrator" : "Project owner"}</div></div>
     <button class="btn ghost sm" data-act="account">Account</button><button class="btn ghost sm" data-act="signout">Sign out</button>` : "";
   const wn = $("#who .wn"); if (wn) wn.textContent = nm;
 }
@@ -1605,10 +1605,10 @@ function renderAdmin(){
         <tbody>${members.map(m => `<tr><td class="aname">${esc(m.fullName||"—")}</td><td class="asub">${esc(m.email||"")}</td><td>${esc(m.office||"")}</td><td>${esc(m.position||"")}</td>
           <td class="num">${P.filter(p=>p.leaderId===m.id).length}</td><td class="num">${P.filter(p=>(p.memberIds||[]).includes(m.id)).length}</td>
           <td class="mono asub">${m.registeredAt?esc(fmtTs(m.registeredAt).slice(0,-6)):""}</td>
-          <td>${m.role==="admin"?`<span class="tagline">Administrator</span>`:`<span class="asub">User</span>`}</td>
+          <td>${m.role==="admin"?`<span class="tagline">Administrator</span>`:`<span class="asub">Project owner</span>`}</td>
           <td>${m.active===false?`<span class="pill s-late">Deactivated</span>`:`<span class="pill s-done">Active</span>`}</td>
           <td><div class="row-actions">${m.id===state.me.id?`<span class="asub">You</span>`:`
-            <button class="btn ghost" data-act="toggle-role" data-id="${m.id}">${m.role==="admin"?"Make user":"Make admin"}</button>
+            <button class="btn ghost" data-act="toggle-role" data-id="${m.id}">${m.role==="admin"?"Make project owner":"Make admin"}</button>
             <button class="btn ghost" data-act="reset-pw" data-id="${m.id}">Reset password</button>
             <button class="btn ghost ${m.active===false?"":"danger"}" data-act="toggle-member" data-id="${m.id}">${m.active===false?"Reactivate":"Deactivate"}</button>`}</div></td></tr>`).join("")}</tbody></table></div>`
       : `<div class="empty">No one else has registered yet. Give faculty and staff this tracker's address so they can register. You can make any of them an administrator from this table.</div>`}
@@ -1988,7 +1988,7 @@ document.addEventListener("click", ev => {
     case "toggle-member": { const m = state.members.find(x => x.id === id); if (m) write(async () => { await api("PATCH", "/api/users/"+id, {active: m.active === false}); await refresh(); }, m.active === false ? "Access restored" : "Account deactivated"); break; }
     case "toggle-role": { const m = state.members.find(x => x.id === id); if (!m) break;
       const toAdmin = m.role !== "admin";
-      confirmBox(toAdmin ? "Make administrator?" : "Remove administrator role?", toAdmin ? `${esc(m.fullName)} will be able to see and change every project, send queries, manage accounts and post announcements.` : `${esc(m.fullName)} will go back to managing only the projects they lead.`, toAdmin ? "Make admin" : "Make user",
+      confirmBox(toAdmin ? "Make administrator?" : "Change to project owner?", toAdmin ? `${esc(m.fullName)} will be able to see and change every project, send queries, manage accounts and post announcements.` : `${esc(m.fullName)} will go back to managing only the projects they lead.`, toAdmin ? "Make admin" : "Make project owner",
         () => write(async () => { await api("PATCH", "/api/users/"+id, {role: toAdmin ? "admin" : "user"}); await refresh(); }, toAdmin ? "Now an administrator" : "Administrator role removed"));
       break; }
     case "reset-pw": { const m = state.members.find(x => x.id === id); if (!m) break;

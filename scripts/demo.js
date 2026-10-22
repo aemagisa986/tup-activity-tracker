@@ -23,7 +23,7 @@ const { DEMO_ACCOUNTS, seedDemo, removeDemo } = require("../demo");
     } else if (seedDemo(state, touch)) {
       await store.save(state, changed);
       console.log(`Added demo data to ${store.describe()}. Sign in with:`);
-      DEMO_ACCOUNTS.forEach(a => console.log(`  ${a.role === "admin" ? "Administrator " : "Project user  "} ${a.email.padEnd(24)} ${a.password}   (${a.fullName})`));
+      DEMO_ACCOUNTS.forEach(a => console.log(`  ${a.role === "admin" ? "Administrator " : "Project owner "} ${a.email.padEnd(24)} ${a.password}   (${a.fullName})`));
     } else console.log("Demo data is already there.");
     console.log("Restart the server if it's running so it picks up the change.");
   } finally { await store.close(); }
