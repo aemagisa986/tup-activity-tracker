@@ -50,6 +50,7 @@ function seedDemo(state, touch) {
   // 1. Community Extension — behind schedule, with a revision, a catch-up activity and an open query
   const p1 = project({ title: "(Demo) Barangay Literacy Program", category: "extension", unit: "College of Industrial Education", fundSource: "GAA " + Y,
     leaderId: leader, memberIds: [member], status: "ongoing", start: d(1, 15), end: d(12, 15),
+    approvedBudget: 125000, budgetRef: "BOR Res. No. 12, s. " + Y, budgetDate: d(1, 8),
     description: "Weekly reading sessions for Grade 1–3 learners in two partner barangays, with take-home modules for parents." });
   target(p1, "Learners reached", "learners", [30, 30, 40, 40], [28, 33, 25, 0]);
   target(p1, "Reading sessions held", "sessions", [12, 12, 12, 12], [12, 10, 8, 0]);
@@ -69,6 +70,7 @@ function seedDemo(state, touch) {
   // 2. Research — on track, with a pending join request
   const p2 = project({ title: "(Demo) Rice Straw Biochar for Soil Remediation", category: "research", unit: "College of Engineering", fundSource: "Research Fund " + Y,
     leaderId: member, memberIds: [leader], status: "ongoing", start: d(2, 1), end: d(11, 30),
+    approvedBudget: 210000, budgetRef: "URDS Approval No. " + Y + "-014", budgetDate: d(1, 25),
     description: "Produce biochar from rice straw and test its effect on heavy-metal uptake in demonstration plots." });
   target(p2, "Research papers submitted", "papers", [0, 1, 1, 1], [0, 1, 1, 0]);
   target(p2, "Field trials completed", "trials", [0, 2, 2, 0], [0, 2, 2, 0]);
@@ -85,20 +87,27 @@ function seedDemo(state, touch) {
   // 3. Academic
   const p3 = project({ title: "(Demo) OBE Curriculum Review – BS Mechanical Engineering", category: "academic", unit: "College of Engineering", fundSource: "GAA " + Y,
     leaderId: leader, memberIds: [], status: "ongoing", start: d(3, 1), end: d(12, 15),
+    approvedBudget: 45000, budgetRef: "BOR Res. No. 19, s. " + Y, budgetDate: d(2, 20),
     description: "Revise course syllabi to outcomes-based format ahead of the accreditation visit." });
   target(p3, "Syllabi revised to OBE format", "syllabi", [0, 10, 15, 15], [0, 12, 15, 6]);
   const l5 = line(p3, "MOOE", "Curriculum writeshops", 30000);
+  const l5b = line(p3, "MOOE", "Honoraria of external reviewers", 15000);
   expense(p3, l5, d(5, 22), "Writeshop venue and meals, 2 days", "DV " + Y + "-05-301", 21000, leader);
+  expense(p3, l5b, d(10, 3), "Honoraria, 3 external reviewers", "DV " + Y + "-10-044", 9000, leader);
   activity(p3, "Writeshops", d(3, 1), d(9, 30), 100);
   activity(p3, "Peer review of syllabi", d(9, 1), d(12, 15), 40);
 
   // 4. Production — with a concern waiting for the admin
   const p4 = project({ title: "(Demo) Campus Bakery Income-Generating Project", category: "production", unit: "College of Industrial Technology", fundSource: "IGP " + Y,
     leaderId: member, memberIds: [], status: "ongoing", start: d(1, 2), end: d(12, 20),
+    approvedBudget: 120000, budgetRef: "IGP Board Res. No. 3, s. " + Y, budgetDate: d(1, 2),
     description: "Bakery run by Food Technology students supplying the campus canteen." });
   target(p4, "Gross sales", "₱ thousands", [50, 50, 60, 60], [48, 55, 61, 20]);
   const l6 = line(p4, "MOOE", "Raw ingredients", 120000);
-  expense(p4, l6, d(9, 30), "Flour, sugar and butter, Jan–Sep", "Various ORs", 95000, member);
+  expense(p4, l6, d(3, 31), "Flour, sugar and butter, Jan–Mar", "Various ORs", 31000, member);
+  expense(p4, l6, d(6, 30), "Flour, sugar and butter, Apr–Jun", "Various ORs", 33000, member);
+  expense(p4, l6, d(9, 30), "Flour, sugar and butter, Jul–Sep", "Various ORs", 31000, member);
+  put("revisions", { projectId: p4, kind: "budget", oldAmount: 100000, newAmount: 120000, ref: "IGP Board Res. No. 9, s. " + Y, reason: "Augmentation for higher canteen orders in the second semester.", by: admin, at: now - 60 * DAYMS });
   activity(p4, "Daily production", d(1, 2), d(12, 20), 80);
   const t2 = put("threads", { projectId: p4, subject: "Request to realign ₱15,000 to equipment repair", kind: "concern", createdBy: member, byAdmin: false, createdAt: now - 2 * DAYMS, lastAt: now - 2 * DAYMS, awaiting: "admin", closed: false });
   put("posts", { threadId: t2, projectId: p4, from: member, asAdmin: false, text: "The deck oven needs a new thermostat. May we realign ₱15,000 from raw ingredients to repairs?", at: now - 2 * DAYMS });
@@ -106,8 +115,12 @@ function seedDemo(state, touch) {
   // 5. Administration
   const p5 = project({ title: "(Demo) ISO 9001:2015 Surveillance Audit Preparation", category: "admin", unit: "Planning and Development Office", fundSource: "GAA " + Y,
     leaderId: admin, memberIds: [], status: "ongoing", start: d(7, 1), end: d(11, 30),
+    approvedBudget: 50000, budgetRef: "Office Order No. 77, s. " + Y, budgetDate: d(6, 20),
     description: "Prepare all academic offices for the external surveillance audit." });
   target(p5, "Offices audit-ready", "offices", [0, 0, 6, 6], [0, 0, 5, 1]);
+  const l7 = line(p5, "MOOE", "Supplies and printing of quality documents", 30000);
+  const l8 = line(p5, "MOOE", "Meals during the audit", 20000);
+  expense(p5, l7, d(8, 14), "Printing of procedure manuals", "DV " + Y + "-08-210", 12500, admin);
   activity(p5, "Internal quality audit", d(7, 1), d(8, 31), 100);
   activity(p5, "Document control review", d(9, 1), d(11, 15), 70);
 

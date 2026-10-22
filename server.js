@@ -34,7 +34,7 @@ const SESSION_MS = 14 * 24 * 3600 * 1000;
 const COOKIE = "uat_sid";
 
 const COLLECTIONS = ["projects", "activities", "accomplishments", "targets", "budgetLines", "expenses",
-  "revisions", "joinRequests", "threads", "posts", "announcements"];
+  "revisions", "joinRequests", "threads", "posts", "announcements", "settings"];
 const CHILDREN = ["activities", "accomplishments", "targets", "budgetLines", "expenses", "revisions", "joinRequests", "threads", "posts"];
 
 /* ---------------- state & persistence ----------------
@@ -150,6 +150,17 @@ const deny = msg => { throw new HttpError(403, msg || "You don't have permission
  * update(u, doc, patch): return true to allow (patch may be trimmed)
  * remove(u, doc): return true to allow
  */
+function checkExpense(b, projectId, partial) {
+  if (!partial || "amount" in b) {
+    const a = Number(b.amount);
+    if (!isFinite(a) || a <= 0) throw new HttpError(400, "Enter an amount above zero.");
+    b.amount = Math.round(a * 100) / 100;
+  }
+  if (!partial || "lineId" in b) {
+    const l = state.data.budgetLines[b.lineId];
+    if (!l || l.projectId !== projectId) throw new HttpError(400, "Choose one of this project's line items.");
+  }
+}
 function projectOf(b) { const p = P(b.projectId); if (!p) throw new HttpError(400, "That project no longer exists."); return p; }
 const RULES = {
   projects: {
@@ -199,8 +210,8 @@ const RULES = {
     remove: (u, d) => canManage(P(d.projectId), u)
   },
   expenses: {
-    create(u, b) { if (!canUpdate(projectOf(b), u)) deny(); b.by = u.id; b.createdAt = Date.now(); },
-    update(u, d, b) { delete b.projectId; delete b.by; const p = P(d.projectId); return canManage(p, u) || (canUpdate(p, u) && d.by === u.id); },
+    create(u, b) { if (!canUpdate(projectOf(b), u)) deny(); checkExpense(b, b.projectId); b.by = u.id; b.createdAt = Date.now(); },
+    update(u, d, b) { delete b.projectId; delete b.by; const p = P(d.projectId); checkExpense(b, d.projectId, true); return canManage(p, u) || (canUpdate(p, u) && d.by === u.id); },
     remove: (u, d) => { const p = P(d.projectId); return canManage(p, u) || (canUpdate(p, u) && d.by === u.id); }
   },
   revisions: {
@@ -246,6 +257,11 @@ const RULES = {
       b.projectId = t.projectId; b.from = u.id; b.asAdmin = isAdmin(u); b.at = Date.now(); b.text = str(b.text, 10000);
     },
     update: () => false,
+    remove: (u) => isAdmin(u)
+  },
+  settings: {
+    create(u, b) { if (!isAdmin(u)) deny("Only administrators can change report settings."); b.updatedBy = u.id; b.updatedAt = Date.now(); },
+    update: (u, d, b) => { if (!isAdmin(u)) return false; b.updatedBy = u.id; b.updatedAt = Date.now(); return true; },
     remove: (u) => isAdmin(u)
   },
   announcements: {

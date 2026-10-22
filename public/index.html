@@ -330,17 +330,70 @@ input[type=range]{accent-color:var(--accent);padding:0;border:0;background:none}
 .printhead .logo{width:52px;height:52px}
 .printhead b{font-family:var(--f-display);font-size:16px;display:block}
 .print-only{display:none}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.seg.wrap{flex-wrap:wrap}
+.repctl{display:flex;flex-direction:column;gap:14px;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.repctl .seg[aria-label="Report"] button{padding:9px 14px}
+.sigbox summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--accent)}
+.sigbox[open]{display:flex;flex-direction:column;gap:10px}
+.sigbox[open] summary{margin-bottom:4px}
+
+/* The report preview is drawn as a sheet of paper in both themes, as it will print. */
+.doc{--p-ink:#1a1a1a;--p-muted:#555;--p-line:#c9c9c9;--p-head:#f0f0f0;--p-grp:#fbf1cf;--p-brand:#6e1820;
+  background:#fff;color:var(--p-ink);border:1px solid var(--line);border-radius:4px;box-shadow:0 2px 10px rgb(0 0 0 / .08);
+  padding:36px 40px 28px;display:flex;flex-direction:column;gap:22px;font-size:12.5px;min-width:0}
+.doc-head{display:flex;align-items:center;justify-content:center;gap:16px;text-align:center;border-bottom:3px double var(--p-brand);padding-bottom:12px}
+.doc-head .logo{width:64px;height:64px}
+.doc-head .logo.has-img{box-shadow:none;padding:0}
+.doc-rep{font-size:12px;letter-spacing:.02em}
+.doc-uni{font-family:var(--f-display);font-weight:650;font-size:17px;color:var(--p-brand);letter-spacing:.03em}
+.doc-addr{font-size:12px;color:var(--p-muted)}
+.doc-title{text-align:center;display:flex;flex-direction:column;gap:3px}
+.doc-title h1{font-family:var(--f-display);font-size:19px;margin:0;letter-spacing:.06em;font-weight:650}
+.doc-period{font-weight:700;font-size:13px}
+.doc-meta{font-size:11.5px;color:var(--p-muted)}
+.doc-sec{display:flex;flex-direction:column;gap:8px;min-width:0}
+.doc-sec h2{font-size:13.5px;margin:0;font-weight:700;color:var(--p-brand);text-transform:none}
+.doc-tablewrap{overflow-x:auto}
+.doc-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:640px;table-layout:fixed}
+.doc-table td{overflow-wrap:anywhere}
+.doc-table th{overflow-wrap:normal;word-break:normal;hyphens:auto}
+.doc-table th{background:var(--p-head);color:var(--p-ink);font-size:10.5px;text-transform:none;letter-spacing:0;font-weight:700;border:1px solid var(--p-line);padding:6px 7px;vertical-align:bottom;white-space:normal}
+.doc-table td{border:1px solid var(--p-line);padding:5px 7px;vertical-align:top;color:var(--p-ink)}
+.doc-table td.num,.doc-table th.num{text-align:right;font-variant-numeric:tabular-nums}
+.doc-table td.num{white-space:nowrap;overflow-wrap:normal}
+.doc-table td.long{min-width:220px;white-space:pre-wrap}
+.doc-table td.grp{background:var(--p-grp);font-weight:700}
+.doc-table tfoot td{background:var(--p-head);font-weight:700}
+.doc-note{font-size:11px;color:var(--p-muted);margin:0;font-style:italic}
+.doc-empty{font-size:12px;color:var(--p-muted);margin:0;font-style:italic}
+.doc-sigs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:18px}
+.doc-sigrole{font-size:11.5px;margin-bottom:34px}
+.doc-signame{font-weight:700;border-top:1px solid var(--p-ink);padding-top:4px;text-transform:uppercase;font-size:12px;min-height:1.4em}
+.doc-sigpos{font-size:11.5px;color:var(--p-muted)}
+.doc-foot{font-size:10px;color:var(--p-muted);border-top:1px solid var(--p-line);padding-top:6px}
+@media (max-width:820px){ .row3{grid-template-columns:1fr} .doc{padding:20px 16px} .doc-sigs{grid-template-columns:1fr;gap:8px} }
+
+@page{size:A4 landscape;margin:12mm}
 @media print{
   :root{--bg:#fff;--surface:#fff;--sunk:#f2f2f2;--ink:#000;--muted:#444;--line:#bbb}
-  .topbar,#notice,.controls,.rephead .acts,.no-print,.toast{display:none!important}
+  body{background:#fff}
+  .topbar,#notice,.controls,.rephead .acts,.no-print,.toast,#modalRoot{display:none!important}
   .page{overflow:visible;padding:0}
   .app,.view{display:block}
   .print-only{display:flex}
+  .inner{max-width:none;gap:0}
   .table-wrap{overflow:visible;border-color:#999}
   .table-wrap table{min-width:0;font-size:10px}
   th,td{padding:4px 6px}
   tr{break-inside:avoid}
   section.block{break-inside:auto}
+  .doc{border:0;box-shadow:none;padding:0;gap:14px}
+  .doc-tablewrap{overflow:visible}
+  .doc-table{min-width:0;font-size:9.5px}
+  .doc-table thead{display:table-header-group}
+  .doc-sec h2{break-after:avoid}
+  .doc-sigs{break-inside:avoid}
 }
 </style>
 </head>
@@ -423,13 +476,13 @@ function statusOf(start, end, progress){
 }
 const pill = st => `<span class="pill s-${st}">${STATUS[st].label}</span>`;
 
-const COLS = ["projects","activities","accomplishments","targets","budgetLines","expenses","revisions","joinRequests","threads","posts"];
+const COLS = ["projects","activities","accomplishments","targets","budgetLines","expenses","revisions","joinRequests","threads","posts","settings"];
 const state = {
   boot:"loading", me:{id:null,name:"",avatarUrl:""}, isAdmin:false, canWrite:true,
   members:[], membersLoaded:false, announcements:[], loaded:new Set(),
   view:"projects", selected:null, tab:"overview", scope:"mine", cat:"all", filter:"all", q:"",
   openThread:null, msgFilter:"attn",
-  rep:{year:THIS_YEAR, period:"annual", cat:"all", scope:"mine"}
+  rep:{type:"accomplishment", year:THIS_YEAR, period:"annual", from:"", to:"", cat:"all", unit:"all", project:"all", scope:"mine", sig:null, sigOpen:false}
 };
 COLS.forEach(c => state[c] = []);
 state.authTab = "login"; state.hasUsers = true; state.meActive = true; state.hasLogo = false;
@@ -567,12 +620,28 @@ function projProgress(p){
   return Math.round(acts.reduce((s,a) => s + (Number(a.progress)||0), 0) / acts.length);
 }
 const projStatus = p => statusOf(p.start, p.end, projProgress(p));
+/* Budgets are approved before the project starts. The approved budget is the project's
+   approvedBudget when recorded; older projects that only have line items use their sum.
+   Line items ("allocated") break the approved budget down by expense class; expenses are what was utilized. */
 function budgetOf(pid, from, to){
-  const alloc = linesOf(pid).reduce((s,l) => s + num(l.allocated), 0);
+  const p = state.projects.find(x => x.id === pid) || {};
+  const lineTotal = linesOf(pid).reduce((s,l) => s + num(l.allocated), 0);
+  const approved = num(p.approvedBudget) > 0 ? num(p.approvedBudget) : lineTotal;
   const ex = expOf(pid);
-  const spentAll = ex.reduce((s,e) => s + num(e.amount), 0);
-  const spent = from ? ex.filter(e => e.date >= from && e.date <= to).reduce((s,e) => s + num(e.amount), 0) : spentAll;
-  return {alloc, spent, spentAll, bal: alloc - spentAll, rate: alloc ? spentAll/alloc*100 : 0};
+  const sum = list => list.reduce((s,e) => s + num(e.amount), 0);
+  const spentAll = sum(ex);
+  const spent = from ? sum(ex.filter(e => e.date >= from && e.date <= to)) : spentAll;      // within the period
+  const spentToDate = to ? sum(ex.filter(e => e.date <= to)) : spentAll;                    // cumulative, as of the period end
+  return {approved, alloc: approved, lineTotal, unallocated: approved - lineTotal, spent, spentAll, spentToDate,
+    bal: approved - spentAll, balAsOf: approved - spentToDate,
+    rate: approved ? spentAll/approved*100 : 0, rateAsOf: approved ? spentToDate/approved*100 : 0};
+}
+function classBreakdown(pid, to){
+  const lines = linesOf(pid), ex = expOf(pid).filter(e => !to || e.date <= to);
+  return Object.keys(ECLASS).map(k => {
+    const ls = lines.filter(l => l.cls === k), ids = new Set(ls.map(l => l.id));
+    return {cls:k, approved: ls.reduce((s,l)=>s+num(l.allocated),0), utilized: ex.filter(e => ids.has(e.lineId)).reduce((s,e)=>s+num(e.amount),0)};
+  });
 }
 function threadAttn(t){
   if (t.closed) return false;
@@ -805,7 +874,7 @@ function renderDetail(){
     <div class="summary">
       <div><span class="k">Overall progress</span><span class="v">${pr}%</span><span class="meter"><i style="width:${pr}%"></i></span></div>
       <div><span class="k">Sub-activities</span><span class="v">${doneActs}/${acts.length}</span><span class="sub">completed</span></div>
-      <div><span class="k">Budget used</span><span class="v">${b.alloc ? pct(b.rate) : "—"}</span><span class="sub mono">${b.alloc ? peso(b.spentAll)+" of "+peso(b.alloc) : "No allocation yet"}</span></div>
+      <div><span class="k">Budget utilized</span><span class="v">${b.approved ? pct(b.rate) : "—"}</span><span class="sub mono">${b.approved ? peso(b.spentAll)+" of "+peso(b.approved)+" approved" : "No approved budget recorded"}</span></div>
       <div><span class="k">Schedule</span><span class="v">${timeNote}</span><span class="sub">${timeSub}</span></div>
     </div>
 
@@ -827,7 +896,7 @@ function tabBody(p){
 }
 
 function tabOverview(p){
-  const acts = actsOf(p.id), revs = revsOf(p.id);
+  const acts = actsOf(p.id), revs = revsOf(p.id).filter(r => r.kind !== "budget");
   const M = canManage(p), U = canUpdate(p);
   return `
     ${p.description ? `<p class="pdesc">${esc(p.description)}</p>` : ""}
@@ -932,28 +1001,50 @@ function tabBudget(p){
   const lines = linesOf(p.id), ex = expOf(p.id), b = budgetOf(p.id), M = canManage(p), U = canUpdate(p);
   const spentBy = id => ex.filter(e => e.lineId === id).reduce((s,e)=>s+num(e.amount),0);
   const unassigned = ex.filter(e => !lines.some(l => l.id === e.lineId)).reduce((s,e)=>s+num(e.amount),0);
+  const brev = revsOf(p.id).filter(r => r.kind === "budget");
+  const cb = classBreakdown(p.id).filter(c => c.approved || c.utilized);
+  const gap = Math.round((b.approved - b.lineTotal) * 100) / 100;
   return `
-  <div class="summary">
-    <div><span class="k">Allocated</span><span class="v mono" style="font-size:20px">${peso(b.alloc)}</span><span class="sub">${lines.length} budget line${lines.length===1?"":"s"}</span></div>
-    <div><span class="k">Utilized</span><span class="v mono" style="font-size:20px">${peso(b.spentAll)}</span><span class="sub">${ex.length} expense entr${ex.length===1?"y":"ies"}</span></div>
-    <div><span class="k">Balance</span><span class="v mono" style="font-size:20px;${b.bal<0?"color:var(--bad)":""}">${peso(b.bal)}</span><span class="sub">${b.bal<0?"Over budget":"Remaining"}</span></div>
-    <div><span class="k">Utilization rate</span><span class="v">${b.alloc ? pct(b.rate) : "—"}</span><span class="meter ${b.rate>100?"bad":b.rate>90?"warn":""}"><i style="width:${clamp(b.rate,0,100)}%"></i></span></div>
-  </div>
   <section class="block">
-    <div class="bhead"><h3>Allocation</h3><span class="count">By expense class and item</span>
-      ${M ? `<div class="acts"><button class="btn primary" data-act="new-line">+ Budget line</button></div>` : ""}</div>
+    <div class="bhead"><h3>Approved budget</h3>
+      ${p.budgetRef || p.budgetDate ? `<span class="count">${esc(p.budgetRef || "")}${p.budgetRef && p.budgetDate ? " · " : ""}${p.budgetDate ? "approved " + fmt(p.budgetDate) : ""}</span>` : ""}
+      ${M ? `<div class="acts"><button class="btn ${num(p.approvedBudget) ? "" : "primary"}" data-act="set-budget">${num(p.approvedBudget) ? "Change approved budget" : "Record approved budget"}</button></div>` : ""}</div>
+    ${!b.approved ? `<div class="empty">No approved budget recorded yet. ${M ? "Use “Record approved budget” to enter the amount and the document that approved it (for example a Board resolution or SARO number), then break it down into line items." : "The project leader records it here."}</div>` : `
+    <div class="summary">
+      <div><span class="k">Approved budget</span><span class="v mono" style="font-size:20px">${peso(b.approved)}</span><span class="sub">${esc(p.fundSource || (num(p.approvedBudget) ? "Fund source not stated" : "Sum of line items"))}</span></div>
+      <div><span class="k">Utilized</span><span class="v mono" style="font-size:20px">${peso(b.spentAll)}</span><span class="sub">${ex.length} expense entr${ex.length===1?"y":"ies"}</span></div>
+      <div><span class="k">Balance</span><span class="v mono" style="font-size:20px;${b.bal<0?"color:var(--bad)":""}">${peso(b.bal)}</span><span class="sub">${b.bal<0?"Over the approved budget":"Unutilized"}</span></div>
+      <div><span class="k">Utilization rate</span><span class="v">${pct(b.rate)}</span><span class="meter ${b.rate>100?"bad":b.rate>90?"warn":""}"><i style="width:${clamp(b.rate,0,100)}%"></i></span></div>
+    </div>
+    ${cb.length ? `<div class="table-wrap"><table>
+      <thead><tr><th>Expense class</th><th class="num">Approved</th><th class="num">Utilized</th><th class="num">Balance</th><th>Utilization</th></tr></thead>
+      <tbody>${cb.map(c => { const r = c.approved ? c.utilized/c.approved*100 : 0; return `<tr><td><b>${c.cls}</b> <span class="asub">${esc(ECLASS[c.cls])}</span></td>
+        <td class="num">${peso(c.approved)}</td><td class="num">${peso(c.utilized)}</td><td class="num">${peso(c.approved-c.utilized)}</td>
+        <td><div class="prog"><span class="meter ${r>100?"bad":r>90?"warn":""}"><i style="width:${clamp(r,0,100)}%"></i></span><span class="mono">${c.approved?pct(r):"—"}</span></div></td></tr>`; }).join("")}</tbody></table></div>` : ""}`}
+    ${b.approved && lines.length && gap > 0.004 ? `<div class="hint" style="color:var(--warn)">${peso(gap)} of the approved budget isn't assigned to a line item yet.</div>` : ""}
+    ${b.approved && gap < -0.004 ? `<div class="hint" style="color:var(--bad)">Line items add up to ${peso(-gap)} more than the approved budget. Correct the line items or record the revised approved budget.</div>` : ""}
+  </section>
+  <section class="block">
+    <div class="bhead"><h3>Line items</h3><span class="count">How the approved budget is distributed</span>
+      ${M ? `<div class="acts"><button class="btn primary" data-act="new-line">+ Line item</button></div>` : ""}</div>
     ${lines.length ? `<div class="table-wrap"><table>
-      <thead><tr><th>Class</th><th>Item / particulars</th><th class="num">Allocated</th><th class="num">Utilized</th><th class="num">Balance</th><th>Use</th>${M?"<th></th>":""}</tr></thead>
+      <thead><tr><th>Class</th><th>Item / particulars</th><th class="num">Approved</th><th class="num">Utilized</th><th class="num">Balance</th><th>Use</th>${M?"<th></th>":""}</tr></thead>
       <tbody>${lines.map(l => { const s = spentBy(l.id), r = num(l.allocated) ? s/num(l.allocated)*100 : 0; return `<tr>
         <td><span class="tagline" title="${esc(ECLASS[l.cls]||"")}">${esc(l.cls||"—")}</span></td><td>${esc(l.item)}</td>
         <td class="num">${peso(l.allocated)}</td><td class="num">${peso(s)}</td><td class="num" style="${num(l.allocated)-s<0?"color:var(--bad)":""}">${peso(num(l.allocated)-s)}</td>
         <td><div class="prog"><span class="meter ${r>100?"bad":r>90?"warn":""}"><i style="width:${clamp(r,0,100)}%"></i></span><span class="mono">${pct(r)}</span></div></td>
         ${M ? `<td><div class="row-actions"><button class="btn ghost" data-act="edit-line" data-id="${l.id}">Edit</button><button class="btn ghost danger" data-act="delete-line" data-id="${l.id}">Delete</button></div></td>` : ""}
       </tr>`; }).join("")}</tbody>
-      <tfoot><tr><td colspan="2">Total${unassigned ? ` <span class="asub">(includes ${peso(unassigned)} not tied to a line)</span>` : ""}</td><td class="num">${peso(b.alloc)}</td><td class="num">${peso(b.spentAll)}</td><td class="num">${peso(b.bal)}</td><td class="mono">${b.alloc?pct(b.rate):"—"}</td>${M?"<td></td>":""}</tr></tfoot>
+      <tfoot><tr><td colspan="2">Total of line items${unassigned ? ` <span class="asub">(utilized includes ${peso(unassigned)} not tied to a line)</span>` : ""}</td><td class="num">${peso(b.lineTotal)}</td><td class="num">${peso(b.spentAll)}</td><td class="num">${peso(b.lineTotal - b.spentAll)}</td><td class="mono">${b.lineTotal?pct(b.spentAll/b.lineTotal*100):"—"}</td>${M?"<td></td>":""}</tr></tfoot>
       </table></div>`
-    : `<div class="empty">No budget allocated yet. Add lines by expense class (Personal Services, MOOE, Capital Outlay) with the approved amount for each item.</div>`}
+    : `<div class="empty">No line items yet. Break the approved budget down by expense class (Personal Services, MOOE, Capital Outlay) and item, as in the approved budget document. Expenses are recorded against these lines.</div>`}
   </section>
+  ${brev.length ? `<section class="block">
+    <div class="bhead"><h3>Changes to the approved budget</h3><span class="count">${brev.length}</span></div>
+    <ul class="log">${brev.map(r => `<li><div class="d mono">${esc(fmtTs(r.at))}</div><div class="t"><span class="tag">${r.oldAmount ? "Approved budget revised" : "Approved budget recorded"}</span><br>
+      <span class="mono">${r.oldAmount ? peso(r.oldAmount) + " → " : ""}${peso(r.newAmount)}</span>${r.ref ? ` · ${esc(r.ref)}` : ""}
+      <div class="pg">${r.reason ? `Reason: <span data-text="${esc(r.reason)}"></span> · ` : ""}by ${esc(nameOf(r.by))}</div></div><span></span></li>`).join("")}</ul>
+  </section>` : ""}
   <section class="block">
     <div class="bhead"><h3>Expenses</h3><span class="count">${ex.length}</span>
       ${U ? `<div class="acts"><button class="btn primary" data-act="new-expense" ${lines.length?"":"disabled title=\"Add a budget line first\""}>+ Record expense</button></div>` : ""}</div>
@@ -1064,110 +1155,409 @@ function renderMessages(){
   $("#messagesInner").querySelectorAll("[data-text]").forEach(n => { n.textContent = n.dataset.text; });
 }
 
-/* ----- Reports ----- */
+/* ----- Reports -----
+ * A report is built once as data (sections of typed columns and rows), then rendered three ways:
+ * as a printable document, as an Excel workbook (one sheet per section) and as CSV.
+ */
+const REPORTS = {
+  accomplishment: {title:"Accomplishment Report", blurb:"Physical and financial accomplishment against targets, with highlights and timeline adjustments."},
+  budget:         {title:"Budget Utilization Report", blurb:"Approved budget against utilization, by category, expense class and project, with the expense ledger."},
+  status:         {title:"Project Status Summary", blurb:"One line per project: schedule, progress, accomplishment rate and budget at a glance."}
+};
 function periodRange(){
-  const y = state.rep.year, p = state.rep.period;
-  if (p === "annual") return [y+"-01-01", y+"-12-31", "Annual " + y];
-  const q = QUARTERS.find(x => x[0] === p);
-  return [y+"-"+q[1], y+"-"+q[2], q[0] + " " + y];
+  const R = state.rep, y = Number(R.year);
+  if (R.period === "custom") {
+    const f = R.from || (y+"-01-01"), t = R.to || (y+"-12-31");
+    return f <= t ? [f, t, fmt(f) + " to " + fmt(t)] : [t, f, fmt(t) + " to " + fmt(f)];
+  }
+  if (R.period === "annual") return [y+"-01-01", y+"-12-31", "Calendar Year " + y];
+  if (R.period === "H1") return [y+"-01-01", y+"-06-30", "First Semester (January–June) " + y];
+  if (R.period === "H2") return [y+"-07-01", y+"-12-31", "Second Semester (July–December) " + y];
+  const q = QUARTERS.find(x => x[0] === R.period);
+  const names = {Q1:"First Quarter", Q2:"Second Quarter", Q3:"Third Quarter", Q4:"Fourth Quarter"};
+  return [y+"-"+q[1], y+"-"+q[2], names[q[0]] + " " + y];
 }
-function reportRows(){
-  const [from, to] = periodRange();
-  const qi = state.rep.period === "annual" ? [0,1,2,3] : [Number(state.rep.period[1])-1];
-  const projs = state.projects.filter(p => (state.rep.scope === "all" || involved(p)))
-    .filter(p => state.rep.cat === "all" || (p.category||"none") === state.rep.cat)
-    .filter(p => (!p.start || p.start <= to) && (!p.end || p.end >= from));
-  return projs.map(p => {
-    const ts = targetsOf(p.id).filter(t => Number(t.year) === Number(state.rep.year));
-    const tRows = ts.map(t => {
-      const T = qi.reduce((s,i)=>s+num((t.q||[])[i]),0), A = qi.reduce((s,i)=>s+num((t.a||[])[i]),0);
-      return {indicator:t.indicator, unit:t.unit||"", T, A, rate: T ? A/T*100 : null};
-    });
-    const rated = tRows.filter(r => r.rate != null);
-    const rate = rated.length ? rated.reduce((s,r)=>s+Math.min(r.rate,100),0)/rated.length : null;
-    const b = budgetOf(p.id, from, to);
-    const latest = accsOf(p.id).find(a => a.date >= from && a.date <= to);
-    return {p, tRows, rate, b, latest, health: projStatus(p), progress: projProgress(p)};
-  });
+/* Quarter cells of a target that fall inside the period. */
+function quarterIdx(year, from, to){
+  return QUARTERS.map((q,i) => [i, year+"-"+q[1], year+"-"+q[2]]).filter(([,f,t]) => f <= to && t >= from).map(([i]) => i);
 }
+function reportProjects(){
+  const R = state.rep, [from, to] = periodRange();
+  return state.projects
+    .filter(p => R.scope === "all" || involved(p))
+    .filter(p => R.cat === "all" || (catOf(p.category) ? p.category : "none") === R.cat)
+    .filter(p => R.unit === "all" || (p.unit || "") === R.unit)
+    .filter(p => R.project === "all" || p.id === R.project)
+    .filter(p => (!p.start || p.start <= to) && (!p.end || p.end >= from))
+    .sort((a,b) => (CATS.findIndex(c=>c.k===a.category)+10)%10 - (CATS.findIndex(c=>c.k===b.category)+10)%10 || a.title.localeCompare(b.title));
+}
+function projFacts(p, from, to){
+  const tRows = targetsOf(p.id).map(t => {
+    const qi = quarterIdx(Number(t.year), from, to);
+    if (!qi.length) return null;
+    const T = qi.reduce((s,i)=>s+num((t.q||[])[i]),0), A = qi.reduce((s,i)=>s+num((t.a||[])[i]),0);
+    return {indicator:t.indicator, unit:t.unit||"", T, A, rate: T ? A/T*100 : null};
+  }).filter(Boolean);
+  const rated = tRows.filter(r => r.rate != null);
+  const rate = rated.length ? rated.reduce((s,r)=>s+Math.min(r.rate,100),0)/rated.length : null;
+  return {p, tRows, rate, b: budgetOf(p.id, from, to), progress: projProgress(p), health: projStatus(p),
+    updates: accsOf(p.id).filter(a => a.date >= from && a.date <= to).reverse(),
+    openQueries: threadsOf(p.id).filter(t => !t.closed).length,
+    lastUpdate: (accsOf(p.id)[0] || {}).date || ""};
+}
+const catLabel = k => (catOf(k) || {label:"Uncategorized"}).label;
+const catKeys = () => [...CATS.map(c => c.k), "none"];
+const groupOf = p => catOf(p.category) ? p.category : "none";
+
+function buildReport(){
+  const R = state.rep, [from, to, periodLabel] = periodRange();
+  const facts = reportProjects().map(p => projFacts(p, from, to));
+  const byCat = k => facts.filter(f => groupOf(f.p) === k);
+  const usedCats = catKeys().filter(k => byCat(k).length || (k !== "none" && R.cat === "all"));
+  const avg = list => { const r = list.filter(x => x != null); return r.length ? r.reduce((s,x)=>s+x,0)/r.length : null; };
+  const sections = [];
+  const C = (h, type, w) => ({h, type: type || "text", w});
+
+  if (R.type === "accomplishment") {
+    sections.push({sheet:"Summary", heading:"I. Summary by category",
+      cols:[C("Category","text",34), C("Projects","int",10), C("Completed","int",11), C("On track","int",10), C("Behind / overdue","int",12), C("Accomplishment rate","pct",14), C("Approved budget","money",18), C("Utilized as of period end","money",18), C("Utilization rate","pct",12)],
+      rows: usedCats.map(k => { const L = byCat(k); const ap = L.reduce((s,f)=>s+f.b.approved,0), ut = L.reduce((s,f)=>s+f.b.spentToDate,0);
+        return [catLabel(k), L.length, L.filter(f=>f.progress>=100).length, L.filter(f=>f.health==="ongoing").length, L.filter(f=>["late","behind"].includes(f.health)).length, avg(L.map(f=>f.rate)), ap, ut, ap ? ut/ap*100 : null]; }),
+      total: (() => { const ap = facts.reduce((s,f)=>s+f.b.approved,0), ut = facts.reduce((s,f)=>s+f.b.spentToDate,0);
+        return ["Total", facts.length, facts.filter(f=>f.progress>=100).length, facts.filter(f=>f.health==="ongoing").length, facts.filter(f=>["late","behind"].includes(f.health)).length, avg(facts.map(f=>f.rate)), ap, ut, ap ? ut/ap*100 : null]; })(),
+      note:"Accomplishment rate is actual ÷ target for each success indicator in the period, capped at 100% per indicator and averaged per project, then per category."});
+
+    sections.push({sheet:"Physical & Financial", heading:"II. Physical and financial accomplishment by project",
+      cols:[C("Project","text",40), C("Office / unit","text",24), C("Project leader","text",22), C("Accomplishment rate","pct",13), C("Overall progress","pct",11), C("Approved budget","money",17), C("Utilized as of period end","money",17), C("Utilization rate","pct",11), C("Status","text",16)],
+      groups: usedCats.filter(k => byCat(k).length).map(k => ({label: catLabel(k), rows: byCat(k).map(f => [f.p.title, f.p.unit||"", leaderLabel(f.p), f.rate, f.progress, f.b.approved, f.b.spentToDate, f.b.approved ? f.b.rateAsOf : null, STATUS[f.health].label + (f.p.status ? " (" + (PSTAT[f.p.status]||f.p.status) + ")" : "")])}))});
+
+    sections.push({sheet:"Targets vs Actual", heading:"III. Success indicators: targets and actual accomplishments",
+      cols:[C("Project","text",36), C("Success indicator","text",36), C("Unit","text",12), C("Target","num",10), C("Actual","num",10), C("Variance","num",10), C("Rate","pct",9)],
+      groups: usedCats.filter(k => byCat(k).length).map(k => ({label: catLabel(k), rows: byCat(k).flatMap(f => f.tRows.length
+        ? f.tRows.map((t,i) => [i ? "" : f.p.title, t.indicator, t.unit, t.T, t.A, t.A - t.T, t.rate])
+        : [[f.p.title, "No targets set for this period", "", null, null, null, null]])})),
+      note:"Variance is actual minus target. A negative variance means the target was not reached in the period."});
+
+    sections.push({sheet:"Highlights", heading:"IV. Highlights of accomplishments",
+      cols:[C("Date","date",12), C("Project","text",34), C("Accomplishment","longtext",70)],
+      groups: usedCats.filter(k => byCat(k).some(f => f.updates.length)).map(k => ({label: catLabel(k), rows: byCat(k).flatMap(f => f.updates.map(u => [u.date, f.p.title, u.text]))})),
+      empty:"No status updates were posted in this period."});
+
+    const revs = facts.flatMap(f => revsOf(f.p.id).filter(r => r.kind !== "budget").filter(r => { const d = new Date(r.at||0); const s = iso(d); return s >= from && s <= to; })
+      .map(r => { const a = state.activities.find(x => x.id === r.activityId);
+        return [iso(new Date(r.at)), f.p.title, r.kind === "catchup" ? "Catch-up activity" + (a ? ": " + a.name : "") : (r.activityId ? "Revised: " + (a ? a.name : "sub-activity") : "Project dates revised"),
+          r.kind === "catchup" ? fmt(r.newStart) + " – " + fmt(r.newEnd) : fmt(r.oldStart) + " – " + fmt(r.oldEnd) + " → " + fmt(r.newStart) + " – " + fmt(r.newEnd), r.reason || ""]; }));
+    sections.push({sheet:"Timeline Changes", heading:"V. Timeline adjustments and catch-up activities",
+      cols:[C("Date","date",12), C("Project","text",32), C("Change","text",30), C("Schedule","text",34), C("Reason","longtext",40)],
+      rows: revs.sort((a,b) => a[0].localeCompare(b[0])), empty:"No timelines were adjusted in this period."});
+  }
+
+  if (R.type === "budget") {
+    sections.push({sheet:"Summary", heading:"I. Summary by category",
+      cols:[C("Category","text",34), C("Projects","int",10), C("Approved budget","money",18), C("Utilized in period","money",18), C("Utilized as of period end","money",18), C("Balance","money",18), C("Utilization rate","pct",12)],
+      rows: usedCats.map(k => { const L = byCat(k); const ap = L.reduce((s,f)=>s+f.b.approved,0), up = L.reduce((s,f)=>s+f.b.spent,0), ut = L.reduce((s,f)=>s+f.b.spentToDate,0);
+        return [catLabel(k), L.length, ap, up, ut, ap-ut, ap ? ut/ap*100 : null]; }),
+      total: (() => { const ap = facts.reduce((s,f)=>s+f.b.approved,0), up = facts.reduce((s,f)=>s+f.b.spent,0), ut = facts.reduce((s,f)=>s+f.b.spentToDate,0);
+        return ["Total", facts.length, ap, up, ut, ap-ut, ap ? ut/ap*100 : null]; })(),
+      note:"Utilization rate is the amount utilized as of the end of the period ÷ the approved budget."});
+
+    const cls = Object.keys(ECLASS).map(k => { let ap = 0, ut = 0; facts.forEach(f => { const c = classBreakdown(f.p.id, to).find(x => x.cls === k); ap += c.approved; ut += c.utilized; }); return [k + " – " + ECLASS[k], ap, ut, ap-ut, ap ? ut/ap*100 : null]; });
+    const lt = facts.reduce((s,f)=>s+f.b.lineTotal,0);
+    sections.push({sheet:"By Expense Class", heading:"II. By expense class",
+      cols:[C("Expense class","text",44), C("Approved (line items)","money",20), C("Utilized as of period end","money",20), C("Balance","money",18), C("Utilization rate","pct",12)],
+      rows: cls, total: ["Total", lt, cls.reduce((s,r)=>s+r[2],0), lt - cls.reduce((s,r)=>s+r[2],0), lt ? cls.reduce((s,r)=>s+r[2],0)/lt*100 : null],
+      note:"Based on the line items each project recorded. Expenses not tied to a line item are counted only in the totals by project."});
+
+    sections.push({sheet:"By Project", heading:"III. By project",
+      cols:[C("Project","text",38), C("Fund source","text",16), C("Approval reference","text",22), C("Approved budget","money",17), C("Utilized in period","money",17), C("Utilized as of period end","money",17), C("Balance","money",17), C("Utilization rate","pct",12)],
+      groups: usedCats.filter(k => byCat(k).length).map(k => ({label: catLabel(k), rows: byCat(k).map(f => [f.p.title, f.p.fundSource||"", f.p.budgetRef||"", f.b.approved, f.b.spent, f.b.spentToDate, f.b.balAsOf, f.b.approved ? f.b.rateAsOf : null])})),
+      total: (() => { const ap = facts.reduce((s,f)=>s+f.b.approved,0), up = facts.reduce((s,f)=>s+f.b.spent,0), ut = facts.reduce((s,f)=>s+f.b.spentToDate,0);
+        return ["Total", "", "", ap, up, ut, ap-ut, ap ? ut/ap*100 : null]; })()});
+
+    const ledger = facts.flatMap(f => expOf(f.p.id).filter(e => e.date >= from && e.date <= to).map(e => { const l = state.budgetLines.find(x => x.id === e.lineId) || {};
+      return [e.date, f.p.title, l.cls || "", l.item || "", e.particulars || "", e.ref || "", num(e.amount)]; })).sort((a,b) => a[0].localeCompare(b[0]));
+    sections.push({sheet:"Expenses", heading:"IV. Expenses recorded in the period",
+      cols:[C("Date","date",12), C("Project","text",34), C("Class","text",8), C("Line item","text",26), C("Particulars","longtext",34), C("Reference","text",18), C("Amount","money",16)],
+      rows: ledger, total: ledger.length ? ["Total", "", "", "", "", "", ledger.reduce((s,r)=>s+r[6],0)] : null, empty:"No expenses were recorded in this period."});
+  }
+
+  if (R.type === "status") {
+    sections.push({sheet:"Project Status", heading:"Project status as of " + fmt(to < TODAY ? to : TODAY),
+      cols:[C("Project","text",36), C("Office / unit","text",22), C("Leader","text",20), C("Start","date",11), C("End","date",11), C("Schedule","text",14), C("Reported status","text",12), C("Progress","pct",9), C("Accomplishment rate","pct",12), C("Approved budget","money",16), C("Utilized","money",16), C("Utilization","pct",10), C("Open queries","int",8), C("Last update","date",11)],
+      groups: usedCats.filter(k => byCat(k).length).map(k => ({label: catLabel(k), rows: byCat(k).map(f => [f.p.title + (f.p.baseEnd && f.p.baseEnd !== f.p.end ? " (end date revised)" : ""), f.p.unit||"", leaderLabel(f.p), f.p.start||"", f.p.end||"", STATUS[f.health].label, PSTAT[f.p.status]||"", f.progress, f.rate, f.b.approved, f.b.spentToDate, f.b.approved ? f.b.rateAsOf : null, f.openQueries, f.lastUpdate])})),
+      total: ["Total: " + facts.length + " project" + (facts.length===1?"":"s"), "", "", "", "", "", "", avg(facts.map(f=>f.progress)), avg(facts.map(f=>f.rate)), facts.reduce((s,f)=>s+f.b.approved,0), facts.reduce((s,f)=>s+f.b.spentToDate,0), (() => { const ap = facts.reduce((s,f)=>s+f.b.approved,0); return ap ? facts.reduce((s,f)=>s+f.b.spentToDate,0)/ap*100 : null; })(), facts.reduce((s,f)=>s+f.openQueries,0), ""]});
+  }
+
+  const filters = [];
+  if (R.cat !== "all") filters.push("Category: " + catLabel(R.cat));
+  if (R.unit !== "all") filters.push("Office / unit: " + (R.unit || "Not stated"));
+  if (R.project !== "all") { const p = state.projects.find(x => x.id === R.project); if (p) filters.push("Project: " + p.title); }
+  if (R.scope === "mine") filters.push("Projects I lead or belong to");
+  return {type:R.type, title: REPORTS[R.type].title, periodLabel, from, to, filters, sections, count: facts.length};
+}
+
+/* ----- report settings (signatories, header) ----- */
+const reportSettings = () => state.settings.find(s => s.key === "report") || {};
+function signatories(){
+  const s = reportSettings(), m = myDoc() || {}, o = state.rep.sig || {};
+  return [
+    {role:"Prepared by", name: o.preparedName ?? (m.fullName || state.me.name || ""), pos: o.preparedPos ?? (m.position || "")},
+    {role:"Reviewed by", name: o.reviewedName ?? (s.reviewedName || ""), pos: o.reviewedPos ?? (s.reviewedPos || "")},
+    {role:"Approved by", name: o.approvedName ?? (s.approvedName || ""), pos: o.approvedPos ?? (s.approvedPos || "")}
+  ];
+}
+
+/* ----- value formatting shared by the document and CSV ----- */
+function cellText(v, type){
+  if (v == null || v === "") return type === "text" || type === "longtext" ? "" : "—";
+  if (type === "money") return peso(v);
+  if (type === "pct") return (Math.round(v*10)/10).toFixed(1) + "%";
+  if (type === "int") return String(Math.round(v));
+  if (type === "num") return (Math.round(v*100)/100).toLocaleString("en-PH");
+  if (type === "date") return /^\d{4}-\d{2}-\d{2}$/.test(v) ? fmt(v) : String(v);
+  return String(v);
+}
+
+function refreshReportDoc(){
+  const el = $("#reportDoc"); if (el) el.outerHTML = reportDocHtml(buildReport());
+}
+function updateSig(input){
+  state.rep.sig = Object.assign({}, state.rep.sig || {}, {[input.dataset.sig]: input.value});
+  refreshReportDoc();
+}
+async function saveSignatories(){
+  const cur = signatories(), o = state.rep.sig || {}, st = reportSettings();
+  const data = {key:"report", reviewedName: cur[1].name, reviewedPos: cur[1].pos, approvedName: cur[2].name, approvedPos: cur[2].pos, header: o.header ?? (st.header || "")};
+  const ok = await write(() => st.id ? upd("settings", st.id, data) : add("settings", data), "Saved as the default for everyone");
+  if (ok) { const keep = {}; ["preparedName","preparedPos"].forEach(k => { if (o[k] != null) keep[k] = o[k]; }); state.rep.sig = keep; render(); }
+}
+document.addEventListener("input", ev => { if (ev.target.dataset && ev.target.dataset.sig) updateSig(ev.target); });
+document.addEventListener("toggle", ev => { if (ev.target.id === "sigBox") state.rep.sigOpen = ev.target.open; }, true);
+
 function renderReports(){
   const R = state.rep;
-  const [from, to, label] = periodRange();
-  const rows = reportRows();
+  // While someone is typing a signatory, a background refresh only redraws the document, not the form.
+  if (document.activeElement && document.activeElement.dataset && document.activeElement.dataset.sig && $("#reportDoc")) { refreshReportDoc(); return; }
   const years = new Set([THIS_YEAR]);
   state.projects.forEach(p => { if (p.start) years.add(Number(p.start.slice(0,4))); if (p.end) years.add(Number(p.end.slice(0,4))); });
   state.targets.forEach(t => years.add(Number(t.year)));
   const ys = [...years].filter(Boolean).sort((a,b)=>b-a);
-  const cats = [...CATS.map(c=>c.k),"none"].filter(k => R.cat === "all" || R.cat === k);
-  const grp = k => rows.filter(r => (catOf(r.p.category) ? r.p.category : "none") === k);
-  const sumRow = list => {
-    const rated = list.filter(r => r.rate != null);
-    return {n:list.length, rate: rated.length ? rated.reduce((s,r)=>s+r.rate,0)/rated.length : null,
-      alloc:list.reduce((s,r)=>s+r.b.alloc,0), spent:list.reduce((s,r)=>s+r.b.spent,0),
-      done:list.filter(r => r.progress>=100).length, late:list.filter(r => r.health==="late"||r.health==="behind").length};
-  };
-  const tot = sumRow(rows);
+  const units = [...new Set(state.projects.map(p => p.unit || ""))].sort();
+  const projOpts = state.projects.filter(p => R.scope === "all" || involved(p)).sort((a,b) => a.title.localeCompare(b.title));
+  if (R.project !== "all" && !projOpts.some(p => p.id === R.project)) R.project = "all";
+  const rep = buildReport();
+  const sig = signatories(), st = reportSettings();
+  const typeBtns = Object.entries(REPORTS).map(([k,v]) => `<button data-act="rtype" data-k="${k}" aria-pressed="${R.type===k}">${v.title}</button>`).join("");
+  const periods = [["annual","Annual"],["H1","1st sem"],["H2","2nd sem"],["Q1","Q1"],["Q2","Q2"],["Q3","Q3"],["Q4","Q4"],["custom","Custom"]];
+
   $("#reportsInner").innerHTML = `
-    <div class="print-only printhead">${logoHtml()}<div><b>Technological University of the Philippines</b><span class="asub">Accomplishment report generated ${esc(fmt(TODAY))}</span></div></div>
-    <div class="rephead">
-      <div><div class="eyebrow">Accomplishment report · ${esc(fmt(from))} – ${esc(fmt(to))}</div><h2>${esc(label)} accomplishments</h2></div>
+    <div class="rephead no-print">
+      <div><div class="eyebrow">Report generation</div><h2>${esc(rep.title)}</h2><p class="hint" style="margin:4px 0 0">${esc(REPORTS[R.type].blurb)}</p></div>
       <div class="acts" style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn" data-act="copy-report">Copy table</button>
         <button class="btn" data-act="print">Print / save as PDF</button>
-        <button class="btn primary" data-act="csv">Download CSV</button>
+        <button class="btn" data-act="csv">Download CSV</button>
+        <button class="btn primary" data-act="xlsx">Download Excel</button>
       </div>
     </div>
-    <div class="controls">
-      <div class="field"><label for="repYear">Year</label><select id="repYear" class="sel">${ys.map(y => `<option ${y===Number(R.year)?"selected":""}>${y}</option>`).join("")}</select></div>
-      <div class="field" style="min-width:0"><span class="flabel">Period</span><div class="seg">${["annual","Q1","Q2","Q3","Q4"].map(k => `<button data-act="period" data-k="${k}" aria-pressed="${R.period===k}">${k==="annual"?"Annual":k}</button>`).join("")}</div></div>
-      <div class="field"><label for="repCat">Category</label><select id="repCat" class="sel"><option value="all">All categories</option>${CATS.map(c => `<option value="${c.k}" ${R.cat===c.k?"selected":""}>${c.label}</option>`).join("")}<option value="none" ${R.cat==="none"?"selected":""}>Uncategorized</option></select></div>
-      ${state.me.id && !state.isAdmin ? `<div class="field"><label for="repScope">Projects</label><select id="repScope" class="sel"><option value="mine" ${R.scope==="mine"?"selected":""}>My projects</option><option value="all" ${R.scope==="all"?"selected":""}>All projects</option></select></div>` : ""}
+    <div class="repctl no-print">
+      <div class="seg wrap" role="group" aria-label="Report">${typeBtns}</div>
+      <div class="controls">
+        <div class="field"><label for="repYear">Year</label><select id="repYear" class="sel">${ys.map(y => `<option ${y===Number(R.year)?"selected":""}>${y}</option>`).join("")}</select></div>
+        <div class="field" style="min-width:0"><span class="flabel">Period</span><div class="seg wrap">${periods.map(([k,l]) => `<button data-act="period" data-k="${k}" aria-pressed="${R.period===k}">${l}</button>`).join("")}</div></div>
+        ${R.period === "custom" ? `<div class="field"><label for="repFrom">From</label><input id="repFrom" type="date" class="sel" value="${esc(R.from||R.year+"-01-01")}"></div><div class="field"><label for="repTo">To</label><input id="repTo" type="date" class="sel" value="${esc(R.to||R.year+"-12-31")}"></div>` : ""}
+      </div>
+      <div class="controls">
+        <div class="field"><label for="repCat">Category</label><select id="repCat" class="sel"><option value="all">All categories</option>${CATS.map(c => `<option value="${c.k}" ${R.cat===c.k?"selected":""}>${c.label}</option>`).join("")}<option value="none" ${R.cat==="none"?"selected":""}>Uncategorized</option></select></div>
+        <div class="field"><label for="repUnit">College / office</label><select id="repUnit" class="sel"><option value="all">All offices</option>${units.map(u => `<option value="${esc(u)}" ${R.unit===u?"selected":""}>${esc(u || "Not stated")}</option>`).join("")}</select></div>
+        <div class="field"><label for="repProject">Project</label><select id="repProject" class="sel"><option value="all">All projects</option>${projOpts.map(p => `<option value="${p.id}" ${R.project===p.id?"selected":""}>${esc(p.title)}</option>`).join("")}</select></div>
+        ${state.me.id && !state.isAdmin ? `<div class="field"><label for="repScope">Include</label><select id="repScope" class="sel"><option value="mine" ${R.scope==="mine"?"selected":""}>My projects</option><option value="all" ${R.scope==="all"?"selected":""}>All projects</option></select></div>` : ""}
+      </div>
+      <details class="sigbox" ${R.sigOpen ? "open" : ""} id="sigBox"><summary>Signatories and header</summary>
+        <div class="row3">${sig.map((s,i) => { const k = ["prepared","reviewed","approved"][i]; return `<div class="field"><label for="sig-${k}N">${s.role}</label><input id="sig-${k}N" data-sig="${k}Name" value="${esc(s.name)}" placeholder="Name"><input id="sig-${k}P" data-sig="${k}Pos" value="${esc(s.pos)}" placeholder="Position" style="margin-top:4px"></div>`; }).join("")}</div>
+        <div class="field"><label for="sig-hdr">Address line under the university name</label><input id="sig-hdr" data-sig="header" value="${esc(R.sig?.header ?? (st.header || ""))}" placeholder="e.g. Ayala Boulevard, Ermita, Manila"></div>
+        <div class="hint">${state.isAdmin ? "Changes apply to this report. Save them to make them the default for everyone." : "Changes apply to the report you print or download now. The administrator sets the defaults."}</div>
+        ${state.isAdmin ? `<div><button class="btn sm" data-act="save-sig">Save as default</button></div>` : ""}
+      </details>
     </div>
-
-    <section class="block">
-      <div class="bhead"><h3>Summary by category</h3></div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Category</th><th class="num">Projects</th><th class="num">Completed</th><th class="num">Behind / overdue</th><th class="num">Accomplishment rate</th><th class="num">Allocated</th><th class="num">Utilized in period</th></tr></thead>
-        <tbody>${cats.map(k => { const s = sumRow(grp(k)); const c = catOf(k); if (k==="none" && !s.n) return ""; return `<tr>
-          <td><span class="${c?"c-"+k:"c-none"}" style="background:none"><span class="cdot"></span></span>${c?c.label:"Uncategorized"}</td>
-          <td class="num">${s.n}</td><td class="num">${s.done}</td><td class="num">${s.late}</td>
-          <td class="num"><span class="rate ${s.rate!=null?rateClass(s.rate):""}">${s.rate!=null?pct(s.rate):"—"}</span></td>
-          <td class="num">${peso(s.alloc)}</td><td class="num">${peso(s.spent)}</td></tr>`; }).join("")}</tbody>
-        <tfoot><tr><td>Total</td><td class="num">${tot.n}</td><td class="num">${tot.done}</td><td class="num">${tot.late}</td><td class="num">${tot.rate!=null?pct(tot.rate):"—"}</td><td class="num">${peso(tot.alloc)}</td><td class="num">${peso(tot.spent)}</td></tr></tfoot>
-      </table></div>
-      <div class="hint">Accomplishment rate = actual ÷ target for each indicator in the period, capped at 100% per indicator, averaged per project and then per category. Projects count when their dates overlap the period.</div>
-    </section>
-
-    <section class="block">
-      <div class="bhead"><h3>Detailed accomplishments</h3><span class="count">${rows.length} project${rows.length===1?"":"s"}</span></div>
-      ${rows.length ? `<div class="table-wrap"><table id="repTable">
-        <thead><tr><th>Project / leader</th><th>Success indicator</th><th class="num">Target</th><th class="num">Actual</th><th class="num">Rate</th><th class="num">Allocated</th><th class="num">Utilized</th><th>Status</th><th>Latest update in period</th></tr></thead>
-        <tbody>${cats.map(k => { const list = grp(k); if (!list.length) return ""; const c = catOf(k);
-          return `<tr><td class="grp" colspan="9">${c?c.label:"Uncategorized"}</td></tr>` + list.map(r => {
-            const n = Math.max(1, r.tRows.length);
-            const first = r.tRows[0];
-            const tcells = t => t ? `<td>${esc(t.indicator)}${t.unit?` <span class="asub">(${esc(t.unit)})</span>`:""}</td><td class="num">${t.T}</td><td class="num">${t.A}</td><td class="num"><span class="rate ${t.rate!=null?rateClass(t.rate):""}">${t.rate!=null?pct(t.rate):"—"}</span></td>` : `<td class="muted">No targets for ${esc(R.year)}</td><td class="num">—</td><td class="num">—</td><td class="num">—</td>`;
-            return `<tr><td rowspan="${n}"><div class="aname"><button class="linkish" data-act="goto-project" data-id="${r.p.id}">${esc(r.p.title)}</button></div><div class="asub">${esc(leaderLabel(r.p))}${r.p.unit?" · "+esc(r.p.unit):""}</div></td>
-              ${tcells(first)}
-              <td class="num" rowspan="${n}">${peso(r.b.alloc)}</td><td class="num" rowspan="${n}">${peso(r.b.spent)}</td>
-              <td rowspan="${n}">${pill(r.health)}<div class="asub mono">${r.progress}% done</div></td>
-              <td rowspan="${n}" class="asub" style="max-width:260px">${r.latest ? esc(r.latest.text.slice(0,160)) + (r.latest.text.length>160?"…":"") : "—"}</td></tr>` +
-              r.tRows.slice(1).map(t => `<tr>${tcells(t)}</tr>`).join("");
-          }).join(""); }).join("")}</tbody></table></div>`
-      : `<div class="empty">No projects fall in ${esc(label)}${R.cat!=="all"?" for this category":""}. Pick another year or period, or check that projects have dates and targets for ${esc(R.year)}.</div>`}
-    </section>`;
+    ${reportDocHtml(rep)}`;
 }
-function reportMatrix(){
-  const [from, to, label] = periodRange();
-  const head = ["Category","Project","Office/Unit","Leader","Success indicator","Unit","Target","Actual","Rate %","Allocated (PHP)","Utilized in period (PHP)","Schedule status","Progress %","Reported status","Latest update"];
-  const out = [head];
-  reportRows().sort((a,b) => CATS.findIndex(c=>c.k===a.p.category) - CATS.findIndex(c=>c.k===b.p.category)).forEach(r => {
-    const base = [catOf(r.p.category)?.label || "Uncategorized", r.p.title, r.p.unit||"", leaderLabel(r.p)];
-    const tail = [r.b.alloc.toFixed(2), r.b.spent.toFixed(2), STATUS[r.health].label, r.progress, PSTAT[r.p.status]||"", r.latest ? r.latest.text : ""];
-    if (!r.tRows.length) out.push([...base, "", "", "", "", "", ...tail]);
-    r.tRows.forEach(t => out.push([...base, t.indicator, t.unit, t.T, t.A, t.rate!=null?Math.round(t.rate):"", ...tail]));
+
+function reportDocHtml(rep){
+  const sig = signatories(), st = reportSettings();
+  const header = state.rep.sig?.header ?? (st.header || "");
+  const by = (myDoc() || {}).fullName || state.me.name || "";
+  const table = s => {
+    const head = `<thead><tr>${s.cols.map(c => `<th class="${["money","pct","int","num"].includes(c.type)?"num":""}">${esc(c.h)}</th>`).join("")}</tr></thead>`;
+    const row = r => `<tr>${r.map((v,i) => { const t = s.cols[i].type; return `<td class="${["money","pct","int","num"].includes(t)?"num":""}${t==="longtext"?" long":""}">${esc(cellText(v,t))}</td>`; }).join("")}</tr>`;
+    let body = "";
+    if (s.groups) body = s.groups.map(g => `<tr><td class="grp" colspan="${s.cols.length}">${esc(g.label)}</td></tr>` + g.rows.map(row).join("")).join("");
+    else body = (s.rows||[]).map(row).join("");
+    const isEmpty = s.groups ? !s.groups.some(g => g.rows.length) : !(s.rows||[]).length;
+    if (isEmpty) return `<p class="doc-empty">${esc(s.empty || "Nothing to report for this period.")}</p>`;
+    const foot = s.total ? `<tfoot><tr>${s.total.map((v,i) => `<td class="${["money","pct","int","num"].includes(s.cols[i].type)?"num":""}">${esc(cellText(v, s.cols[i].type))}</td>`).join("")}</tr></tfoot>` : "";
+    const totalW = s.cols.reduce((a,c) => a + (c.w || 14), 0);
+    const colgroup = `<colgroup>${s.cols.map(c => `<col style="width:${((c.w || 14) / totalW * 100).toFixed(2)}%">`).join("")}</colgroup>`;
+    return `<div class="doc-tablewrap"><table class="doc-table">${colgroup}${head}<tbody>${body}</tbody>${foot}</table></div>`;
+  };
+  return `<article class="doc" id="reportDoc">
+    <header class="doc-head">
+      ${logoHtml()}
+      <div class="doc-org"><div class="doc-rep">Republic of the Philippines</div><div class="doc-uni">TECHNOLOGICAL UNIVERSITY OF THE PHILIPPINES</div>${header ? `<div class="doc-addr">${esc(header)}</div>` : ""}</div>
+    </header>
+    <div class="doc-title"><h1>${esc(rep.title.toUpperCase())}</h1><div class="doc-period">${esc(rep.periodLabel)}</div>
+      <div class="doc-meta">${esc(fmt(rep.from))} to ${esc(fmt(rep.to))}${rep.filters.length ? " · " + rep.filters.map(esc).join(" · ") : ""} · ${rep.count} project${rep.count===1?"":"s"}</div></div>
+    ${rep.count ? rep.sections.map(s => `<section class="doc-sec"><h2>${esc(s.heading)}</h2>${table(s)}${s.note ? `<p class="doc-note">${esc(s.note)}</p>` : ""}</section>`).join("")
+      : `<p class="doc-empty">No projects match these settings. Projects are included when their dates overlap the period. Choose another period or widen the filters.</p>`}
+    <div class="doc-sigs">${sig.map(s => `<div class="doc-sig"><div class="doc-sigrole">${esc(s.role)}:</div><div class="doc-signame">${esc(s.name) || "&nbsp;"}</div><div class="doc-sigpos">${esc(s.pos) || "&nbsp;"}</div></div>`).join("")}</div>
+    <footer class="doc-foot">Generated ${esc(fmtTs(Date.now()))}${by ? " by " + esc(by) : ""} · University Activity Tracker</footer>
+  </article>`;
+}
+
+/* ----- downloads ----- */
+function saveBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+const reportFileName = (rep, ext) => (rep.title + " – " + rep.periodLabel).replace(/[\\/:*?"<>|]+/g, "-") + "." + ext;
+
+function downloadCsv(){
+  const rep = buildReport();
+  const lines = [[rep.title], [rep.periodLabel + " (" + rep.from + " to " + rep.to + ")"], ...rep.filters.map(f => [f]), []];
+  const raw = (v, t) => v == null ? "" : (t === "money" ? Number(v).toFixed(2) : t === "pct" ? (Math.round(v*10)/10).toFixed(1) : v);
+  rep.sections.forEach(s => {
+    lines.push([s.heading]);
+    lines.push(s.cols.map(c => c.h + (c.type === "money" ? " (PHP)" : c.type === "pct" ? " (%)" : "")));
+    const emit = r => lines.push(r.map((v,i) => raw(v, s.cols[i].type)));
+    if (s.groups) s.groups.forEach(g => { if (g.rows.length) { lines.push([g.label]); g.rows.forEach(emit); } });
+    else (s.rows||[]).forEach(emit);
+    if (s.total) emit(s.total);
+    lines.push([]);
   });
-  return {out, label};
+  signatories().forEach(s => lines.push([s.role, s.name, s.pos]));
+  const csv = "﻿" + lines.map(r => r.map(v => { const x = String(v ?? ""); return /[",\n\r]/.test(x) ? '"' + x.replace(/"/g,'""') + '"' : x; }).join(",")).join("\r\n");
+  saveBlob(new Blob([csv], {type:"text/csv;charset=utf-8"}), reportFileName(rep, "csv"));
+  toast("CSV downloaded");
+}
+
+function downloadXlsx(){
+  const rep = buildReport();
+  const sig = signatories(), header = state.rep.sig?.header ?? (reportSettings().header || "");
+  const sheets = rep.sections.map(s => {
+    const n = s.cols.length, rows = [], merges = [];
+    const title = (txt, style) => { rows.push([{v:txt, s:style}]); if (n > 1) merges.push([rows.length-1, 0, rows.length-1, n-1]); };
+    title("TECHNOLOGICAL UNIVERSITY OF THE PHILIPPINES", 4);
+    if (header) title(header, 11);
+    title(rep.title, 4);
+    title(rep.periodLabel + " (" + fmt(rep.from) + " to " + fmt(rep.to) + ")" + (rep.filters.length ? " · " + rep.filters.join(" · ") : ""), 11);
+    rows.push([]);
+    title(s.heading, 12);
+    const headerRow = rows.length;
+    rows.push(s.cols.map(c => ({v:c.h, s:1})));
+    const styleOf = (t, total) => total ? ({money:5, pct:10, int:13, num:13}[t] || 9) : ({money:2, pct:3, int:6, num:14, longtext:8}[t] || 8);
+    const val = (v, t) => v == null || v === "" ? null : t === "pct" ? v/100 : (["money","int","num"].includes(t) ? Number(v) : t === "date" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? fmt(v) : String(v));
+    const emit = (r, total) => rows.push(r.map((v,i) => ({v: val(v, s.cols[i].type), s: styleOf(s.cols[i].type, total)})));
+    const isEmpty = s.groups ? !s.groups.some(g => g.rows.length) : !(s.rows||[]).length;
+    if (isEmpty) rows.push([{v: s.empty || "Nothing to report for this period.", s:11}]);
+    else if (s.groups) s.groups.forEach(g => { if (!g.rows.length) return; rows.push([{v:g.label, s:7}, ...Array(n-1).fill({v:null, s:7})]); merges.push([rows.length-1, 0, rows.length-1, n-1]); g.rows.forEach(r => emit(r)); });
+    else (s.rows||[]).forEach(r => emit(r));
+    if (s.total && !isEmpty) emit(s.total, true);
+    if (s.note) { rows.push([]); title(s.note, 11); }
+    rows.push([]); rows.push([]);
+    rows.push(sig.map(x => ({v: x.role + ":", s:11})));
+    rows.push([]);
+    rows.push(sig.map(x => ({v: x.name, s:12})));
+    rows.push(sig.map(x => ({v: x.pos, s:11})));
+    return {name: s.sheet, rows, merges, widths: s.cols.map(c => c.w || 14), freeze: headerRow + 1};
+  });
+  saveBlob(new Blob([makeXlsx(sheets)], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), reportFileName(rep, "xlsx"));
+  toast("Excel file downloaded");
+}
+
+/* Minimal .xlsx writer: inline strings, a fixed style table, stored (uncompressed) zip. */
+function makeXlsx(sheets){
+  const xe = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+  const colName = i => { let s = ""; i++; while (i) { const m = (i-1) % 26; s = String.fromCharCode(65+m) + s; i = Math.floor((i-1)/26); } return s; };
+  const used = new Set();
+  const sheetName = n => { let b = String(n).replace(/[\\\/\?\*\[\]:]/g, "-").slice(0, 31) || "Sheet"; let x = b, k = 2; while (used.has(x.toLowerCase())) x = b.slice(0, 28) + " " + k++; used.add(x.toLowerCase()); return x; };
+  const names = sheets.map(s => sheetName(s.name));
+  const sheetXml = s => {
+    const cols = s.widths && s.widths.length ? `<cols>${s.widths.map((w,i) => `<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols>` : "";
+    const pane = s.freeze ? `<sheetViews><sheetView workbookViewId="0"><pane ySplit="${s.freeze}" topLeftCell="A${s.freeze+1}" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>` : `<sheetViews><sheetView workbookViewId="0"/></sheetViews>`;
+    const rows = s.rows.map((r,ri) => `<row r="${ri+1}">${r.map((c,ci) => {
+      if (!c) return "";
+      const ref = colName(ci) + (ri+1), st = c.s ? ` s="${c.s}"` : "";
+      if (c.v == null || c.v === "") return `<c r="${ref}"${st}/>`;
+      if (typeof c.v === "number" && isFinite(c.v)) return `<c r="${ref}"${st}><v>${c.v}</v></c>`;
+      return `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${xe(c.v)}</t></is></c>`;
+    }).join("")}</row>`).join("");
+    const merges = s.merges && s.merges.length ? `<mergeCells count="${s.merges.length}">${s.merges.map(([r1,c1,r2,c2]) => `<mergeCell ref="${colName(c1)}${r1+1}:${colName(c2)}${r2+1}"/>`).join("")}</mergeCells>` : "";
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">${pane}${cols}<sheetData>${rows}</sheetData>${merges}<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/><pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  };
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0.00"/><numFmt numFmtId="165" formatCode="0.0%"/></numFmts>
+<fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="13"/><color rgb="FF6E1820"/><name val="Calibri"/></font><font><i/><sz val="10"/><color rgb="FF555555"/><name val="Calibri"/></font></fonts>
+<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE7E7E9"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFBF1CF"/></patternFill></fill></fills>
+<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFBBBBBB"/></left><right style="thin"><color rgb="FFBBBBBB"/></right><top style="thin"><color rgb="FFBBBBBB"/></top><bottom style="thin"><color rgb="FFBBBBBB"/></bottom><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="15">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment wrapText="1" vertical="center"/></xf>
+<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>
+<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>
+<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="164" fontId="1" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>
+<xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="165" fontId="1" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="3" fontId="1" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="4" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment vertical="top"/></xf>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+  const files = [
+    ["[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s,i) => `<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`],
+    ["_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ["xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${names.map((n,i) => `<sheet name="${xe(n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`],
+    ["xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i) => `<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+    ["xl/styles.xml", styles],
+    ...sheets.map((s,i) => [`xl/worksheets/sheet${i+1}.xml`, sheetXml(s)])
+  ];
+  return zipStore(files);
+}
+const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b){ let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files){
+  const enc = new TextEncoder(), parts = [], central = [];
+  let offset = 0;
+  const d = new Date(), dosTime = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), dosDate = ((d.getFullYear() - 1980) << 9) | ((d.getMonth()+1) << 5) | d.getDate();
+  for (const [name, text] of files) {
+    const nb = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, nb.length, true); lh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lh.buffer), nb, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, dosTime, true); ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, nb.length, true);
+    ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), nb);
+    offset += 30 + nb.length + data.length;
+  }
+  const cdSize = central.reduce((s,p) => s + p.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)]);
 }
 
 /* ----- Admin ----- */
@@ -1182,7 +1572,8 @@ function renderAdmin(){
   const uncats = P.filter(p => !catOf(p.category));
   const risky = P.filter(p => ["late","behind"].includes(projStatus(p))).sort((a,b) => (a.end||"").localeCompare(b.end||""));
   const awaiting = state.threads.filter(t => !t.closed && t.awaiting === "admin");
-  const recentRevs = [...state.revisions].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,6);
+  const schedRevs = state.revisions.filter(r => r.kind !== "budget");
+  const recentRevs = [...schedRevs].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,6);
   const silent = P.filter(p => projProgress(p) < 100 && p.start && p.start <= TODAY).filter(p => { const a = accsOf(p.id)[0]; return !a || days(a.date, TODAY) > 30; });
   const members = [...state.members].sort((a,b) => (a.fullName||"").localeCompare(b.fullName||""));
   const pTitle = id => (P.find(p=>p.id===id)||{}).title || "Deleted project";
@@ -1192,7 +1583,7 @@ function renderAdmin(){
     <div class="cats">${catStats.map(s => `<div class="catcard c-${s.c.k}" style="background:var(--surface)">
       <div class="cn">${s.c.label}</div><div class="big mono">${s.n}</div>
       <dl><dt>Avg. progress</dt><dd>${s.n?s.avg+"%":"—"}</dd><dt>Behind / overdue</dt><dd style="${s.risk?"color:var(--bad)":""}">${s.risk}</dd>
-      <dt>Allocated</dt><dd>${peso(s.alloc)}</dd><dt>Utilized</dt><dd>${s.alloc?pct(s.spent/s.alloc*100):"—"}</dd></dl></div>`).join("")}</div>
+      <dt>Approved budget</dt><dd>${peso(s.alloc)}</dd><dt>Utilized</dt><dd>${peso(s.spent)}</dd><dt>Utilization</dt><dd>${s.alloc?pct(s.spent/s.alloc*100):"—"}</dd></dl></div>`).join("")}</div>
     ${uncats.length ? `<div class="notice" style="border:1px solid var(--line);border-radius:var(--r)"><span><b>${uncats.length} project${uncats.length===1?"":"s"} without a category.</b> Open each and use Edit to assign one of the five categories so it appears in reports.</span><button class="btn sm" data-act="show-uncat">Show them</button></div>` : ""}
     <div class="two">
       <section class="block"><div class="bhead"><h3>Behind or overdue</h3><span class="count">${risky.length}</span></div>
@@ -1204,7 +1595,7 @@ function renderAdmin(){
       <section class="block"><div class="bhead"><h3>No update in 30+ days</h3><span class="count">${silent.length}</span></div>
         ${silent.length ? `<ul class="mini">${silent.slice(0,8).map(p => { const a = accsOf(p.id)[0]; return `<li><div class="grow"><button class="linkish" data-act="goto-project" data-id="${p.id}">${esc(p.title)}</button><div class="asub">${a ? "Last update " + fmt(a.date) : "No updates posted"} · ${esc(leaderLabel(p))}</div></div><button class="btn sm" data-act="quick-query" data-id="${p.id}">Send query</button></li>`; }).join("")}</ul>` : `<div class="empty">All started projects have a recent update.</div>`}
       </section>
-      <section class="block"><div class="bhead"><h3>Recent timeline changes</h3><span class="count">${state.revisions.length}</span></div>
+      <section class="block"><div class="bhead"><h3>Recent timeline changes</h3><span class="count">${schedRevs.length}</span></div>
         ${recentRevs.length ? `<ul class="mini">${recentRevs.map(r => `<li><div class="grow"><button class="linkish" data-act="goto-project" data-id="${r.projectId}">${esc(pTitle(r.projectId))}</button><div class="asub">${r.kind==="catchup"?"Catch-up added":"Revised"} to ${fmt(r.newStart)} – ${fmt(r.newEnd)} · <span data-text="${esc(r.reason)}"></span></div></div></li>`).join("")}</ul>` : `<div class="empty">No dates have been revised.</div>`}
       </section>
     </div>
@@ -1271,12 +1662,15 @@ function openProject(p){
     }
     Object.assign(data, {createdAt:Date.now(), createdBy:state.me.id, baseStart:data.start, baseEnd:data.end, memberIds:[]});
     if (!state.isAdmin || !data.leaderId) data.leaderId = data.leaderId || (myDoc() ? state.me.id : null);
+    const amt = Math.round(num(fd.approvedBudget) * 100) / 100;
+    if (amt > 0) Object.assign(data, {approvedBudget: amt, budgetRef: (fd.budgetRef||"").trim(), budgetDate: fd.budgetDate || ""});
     let newId;
     const ok = await write(async () => { newId = await add("projects", data); }, "Project created");
-    if (ok) { state.selected = newId; state.tab = "overview"; render(); }
+    if (ok && amt > 0) await write(() => add("revisions", {projectId:newId, kind:"budget", oldAmount:0, newAmount:amt, ref:data.budgetRef, reason:""}));
+    if (ok) { state.selected = newId; state.tab = amt > 0 ? "budget" : "overview"; render(); }
     return ok;
   };
-  fn.validate = fd => !fd.title.trim() ? "Give the project a title." : (!fd.category ? "Choose a category." : dateErr(fd.start, fd.end));
+  fn.validate = fd => !fd.title.trim() ? "Give the project a title." : (!fd.category ? "Choose a category." : (fd.approvedBudget && !(Number(fd.approvedBudget) >= 0) ? "Enter the approved budget as an amount in pesos." : dateErr(fd.start, fd.end)));
   const leaderField = state.isAdmin ? `<div class="field"><label for="f-leader">Project leader</label><select id="f-leader" name="leaderId"><option value="">${isNew && myDoc() ? "Me" : "Not assigned"}</option>${memberOptions(p.leaderId)}</select>${p.lead && !p.leaderId ? `<span class="hint">Previously recorded as “${esc(p.lead)}”.</span>` : ""}</div>` : "";
   modal(isNew ? "New project" : "Edit project", `
     <div class="field"><label for="f-title">Project title</label><input id="f-title" name="title" value="${esc(p.title)}" placeholder="e.g. Faculty Research Colloquium 2026"></div>
@@ -1293,7 +1687,12 @@ function openProject(p){
       <div class="field"><label for="f-start">Start date</label><input id="f-start" type="date" name="start" value="${esc(p.start||TODAY)}"></div>
       <div class="field"><label for="f-end">End date</label><input id="f-end" type="date" name="end" value="${esc(p.end)}"></div>
     </div>
-    ${!isNew ? `<div class="hint">To move dates because of delays, use “Revise project dates” on the Overview tab so the reason is logged.</div>` : ""}
+    ${!isNew ? `<div class="hint">To move dates because of delays, use “Revise project dates” on the Overview tab so the reason is logged. The approved budget is changed on the Budget tab.</div>` : `
+    <div class="row3">
+      <div class="field"><label for="f-pbud">Approved budget (₱)</label><input id="f-pbud" class="mono" type="number" min="0" step="0.01" name="approvedBudget" placeholder="0.00"></div>
+      <div class="field"><label for="f-pref">Approval reference</label><input id="f-pref" name="budgetRef" placeholder="e.g. BOR Res. No. 45"></div>
+      <div class="field"><label for="f-pdate">Date approved</label><input id="f-pdate" type="date" name="budgetDate"></div>
+    </div>`}
     <div class="field"><label for="f-desc">Objectives / description</label><textarea id="f-desc" name="description" placeholder="What this project should achieve">${esc(p.description)}</textarea></div>`, fn, isNew ? "Create project" : "Save");
 }
 
@@ -1415,13 +1814,20 @@ function openActuals(t){
 function openLine(l){
   const p = curProject(); if (!p) return;
   l = l || {};
+  const b = budgetOf(p.id);
   const fn = fd => { const data = {cls:fd.cls, item:fd.item.trim(), allocated:num(fd.allocated)};
-    return l.id ? write(() => upd("budgetLines", l.id, data), "Budget line updated") : write(() => add("budgetLines", {...data, projectId:p.id, createdAt:Date.now()}), "Budget line added"); };
-  fn.validate = fd => !fd.item.trim() ? "Describe the item." : (!(Number(fd.allocated) >= 0) || fd.allocated === "" ? "Enter the allocated amount." : null);
-  modal(l.id ? "Edit budget line" : "Add budget line", `
+    return l.id ? write(() => upd("budgetLines", l.id, data), "Line item updated") : write(() => add("budgetLines", {...data, projectId:p.id, createdAt:Date.now()}), "Line item added"); };
+  fn.validate = fd => !fd.item.trim() ? "Describe the item." : (fd.allocated === "" || !(Number(fd.allocated) >= 0) ? "Enter the approved amount for this item." : null);
+  const left = b.approved ? b.approved - b.lineTotal + num(l.allocated) : null;
+  modal(l.id ? "Edit line item" : "Add line item", `
     <div class="field"><label for="f-cls">Expense class</label><select id="f-cls" name="cls">${Object.entries(ECLASS).map(([k,v]) => `<option value="${k}" ${(l.cls||"MOOE")===k?"selected":""}>${k} — ${v}</option>`).join("")}</select></div>
     <div class="field"><label for="f-item">Item / particulars</label><input id="f-item" name="item" value="${esc(l.item)}" placeholder="e.g. Meals and snacks for participants"></div>
-    <div class="field"><label for="f-alloc">Allocated amount (₱)</label><input id="f-alloc" class="mono" type="number" min="0" step="0.01" name="allocated" value="${l.allocated ?? ""}"></div>`, fn);
+    <div class="field"><label for="f-alloc">Approved amount (₱)</label><input id="f-alloc" class="mono" type="number" min="0" step="0.01" name="allocated" value="${l.allocated ?? ""}">
+      <span class="hint">${left != null ? (left >= 0 ? peso(left) + " of the approved budget is not yet assigned to other line items." : "Other line items already exceed the approved budget by " + peso(-left) + ".") : "Record the project's approved budget first so line items can be checked against it."}</span></div>`, fn);
+}
+function lineBalance(lineId, exceptExpenseId){
+  const l = state.budgetLines.find(x => x.id === lineId); if (!l) return null;
+  return num(l.allocated) - state.expenses.filter(e => e.lineId === lineId && e.id !== exceptExpenseId).reduce((s,e)=>s+num(e.amount),0);
 }
 function openExpense(e){
   const p = curProject(); if (!p) return;
@@ -1429,17 +1835,48 @@ function openExpense(e){
   const lines = linesOf(p.id);
   const fn = fd => { const data = {date:fd.date, lineId:fd.lineId, particulars:fd.particulars.trim(), ref:fd.ref.trim(), amount:num(fd.amount)};
     return e.id ? write(() => upd("expenses", e.id, data), "Expense updated") : write(() => add("expenses", {...data, projectId:p.id, by:state.me.id, createdAt:Date.now()}), "Expense recorded"); };
-  fn.validate = fd => !fd.date ? "Enter the date." : (!fd.particulars.trim() ? "Describe the expense." : (!(Number(fd.amount) > 0) ? "Enter an amount above zero." : null));
+  fn.validate = fd => {
+    if (!fd.date) return "Enter the date.";
+    if (!fd.particulars.trim()) return "Describe the expense.";
+    if (!(Number(fd.amount) > 0)) return "Enter an amount above zero.";
+    const bal = lineBalance(fd.lineId, e.id);
+    if (bal != null && Number(fd.amount) > bal + 0.004) return `This is ${peso(Number(fd.amount) - bal)} more than the line item's remaining balance (${peso(Math.max(bal,0))}). Check the amount, or ask the project leader to update the line item to the approved realignment first.`;
+    return null;
+  };
   modal(e.id ? "Edit expense" : "Record expense", `
     <div class="row2">
       <div class="field"><label for="f-edate">Date</label><input id="f-edate" type="date" name="date" value="${esc(e.date||TODAY)}"></div>
-      <div class="field"><label for="f-eline">Budget line</label><select id="f-eline" name="lineId">${lines.map(l => `<option value="${l.id}" ${e.lineId===l.id?"selected":""}>${esc(l.cls)} · ${esc(l.item)}</option>`).join("")}</select></div>
+      <div class="field"><label for="f-eline">Line item (remaining balance)</label><select id="f-eline" name="lineId">${lines.map(l => `<option value="${l.id}" ${e.lineId===l.id?"selected":""}>${esc(l.cls)} · ${esc(l.item)} (${peso(lineBalance(l.id, e.id))})</option>`).join("")}</select></div>
     </div>
     <div class="field"><label for="f-epart">Particulars</label><input id="f-epart" name="particulars" value="${esc(e.particulars)}" placeholder="e.g. Snacks for Day 1, 120 pax"></div>
     <div class="row2">
       <div class="field"><label for="f-eamt">Amount (₱)</label><input id="f-eamt" class="mono" type="number" min="0" step="0.01" name="amount" value="${e.amount ?? ""}"></div>
       <div class="field"><label for="f-eref">Reference no.</label><input id="f-eref" class="mono" name="ref" value="${esc(e.ref)}" placeholder="DV / PR / OR number"></div>
     </div>`, fn);
+}
+/* The approved budget comes from an approving document; changes to it are logged with a reason. */
+function openBudget(){
+  const p = curProject(); if (!p) return;
+  const old = num(p.approvedBudget);
+  const fn = async fd => {
+    const amt = Math.round(num(fd.amount) * 100) / 100;
+    const ok = await write(() => upd("projects", p.id, {approvedBudget: amt, budgetRef: fd.ref.trim(), budgetDate: fd.date || "", fundSource: fd.fund.trim()}), old ? "Approved budget updated" : "Approved budget recorded");
+    if (ok && amt !== old) await write(() => add("revisions", {projectId:p.id, kind:"budget", oldAmount: old, newAmount: amt, ref: fd.ref.trim(), reason: (fd.reason||"").trim()}));
+    return ok;
+  };
+  fn.validate = fd => !(Number(fd.amount) > 0) ? "Enter the approved budget, in pesos." : (old && Math.abs(Number(fd.amount) - old) > 0.004 && !(fd.reason||"").trim() ? "Give the reason for changing the approved budget (for example: augmentation approved under Board Resolution No. 52)." : null);
+  modal(old ? "Change approved budget" : "Record approved budget", `
+    <div class="aname">${esc(p.title)}</div>
+    <div class="row2">
+      <div class="field"><label for="f-bamt">Approved budget (₱)</label><input id="f-bamt" class="mono" type="number" min="0" step="0.01" name="amount" value="${old || ""}"></div>
+      <div class="field"><label for="f-bdate">Date approved</label><input id="f-bdate" type="date" name="date" value="${esc(p.budgetDate || "")}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="f-bref">Approval reference</label><input id="f-bref" name="ref" value="${esc(p.budgetRef || "")}" placeholder="e.g. BOR Res. No. 45, s. ${THIS_YEAR}"></div>
+      <div class="field"><label for="f-bfund">Fund source</label><input id="f-bfund" name="fund" value="${esc(p.fundSource || "")}" placeholder="e.g. GAA ${THIS_YEAR}, IGF, external grant"></div>
+    </div>
+    ${old ? `<div class="field"><label for="f-breason">Reason for the change</label><textarea id="f-breason" name="reason" placeholder="Needed only if the amount changes, e.g. augmentation, realignment or reduction, and the document that approved it"></textarea></div>` : `<input type="hidden" name="reason" value="">`}
+    <div class="hint">Then break it down into line items by expense class. Expenses are recorded against those line items.</div>`, fn, old ? "Save" : "Record");
 }
 
 function openThread(kind, projectId){
@@ -1476,27 +1913,6 @@ function confirmBox(title, msg, label, run){
     <form id="mForm"><p style="margin:0">${msg}</p><div class="form-actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary" id="mSubmit" style="background:var(--bad);border-color:var(--bad);color:#fff">${label||"Delete"}</button></div></form></div></div>`;
   $("#mForm").addEventListener("submit", async ev => { ev.preventDefault(); $("#mSubmit").disabled = true; await run(); closeModal(); });
   $("#mSubmit").focus();
-}
-
-/* ---------- report export ---------- */
-async function downloadCsv(){
-  const {out, label} = reportMatrix();
-  const csv = "﻿" + out.map(r => r.map(v => { const s = String(v ?? ""); return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s; }).join(",")).join("\r\n");
-  const url = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
-  const a = document.createElement("a");
-  a.href = url; a.download = "Accomplishment report " + label + ".csv";
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-  toast("Report downloaded");
-}
-async function copyReport(){
-  const {out} = reportMatrix();
-  const tsv = out.map(r => r.map(v => String(v ?? "").replace(/[\t\n]+/g," ")).join("\t")).join("\n");
-  try { await navigator.clipboard.writeText(tsv); toast("Copied. Paste into Excel or Word."); }
-  catch(e){
-    $("#modalRoot").innerHTML = `<div class="overlay" data-act="close-overlay"><div class="modal"><header><h3>Copy the report</h3></header><form id="mForm"><p class="hint" style="margin:0">Select all the text below, copy it, and paste into Excel.</p><div class="field"><textarea id="f-copy" readonly style="min-height:240px" class="mono"></textarea></div><div class="form-actions"><button type="button" class="btn" data-act="close">Close</button></div></form></div></div>`;
-    const ta = $("#f-copy"); ta.value = tsv; ta.focus(); ta.select();
-  }
 }
 
 /* ---------- events ---------- */
@@ -1543,7 +1959,10 @@ document.addEventListener("click", ev => {
     case "msgfilter": state.msgFilter = t.dataset.k; render(); break;
     case "period": state.rep.period = t.dataset.k; render(); break;
     case "csv": downloadCsv(); break;
-    case "copy-report": copyReport(); break;
+    case "xlsx": downloadXlsx(); break;
+    case "rtype": state.rep.type = t.dataset.k; render(); break;
+    case "save-sig": saveSignatories(); break;
+    case "set-budget": openBudget(); break;
     case "show-uncat": state.view = "projects"; state.scope = "all"; state.cat = "none"; state.filter = "all"; render(); break;
     case "join": {
       const pr = find("projects");
@@ -1618,6 +2037,11 @@ document.addEventListener("change", ev => {
   else if (id === "repYear") { state.rep.year = Number(ev.target.value); render(); }
   else if (id === "repCat") { state.rep.cat = ev.target.value; render(); }
   else if (id === "repScope") { state.rep.scope = ev.target.value; render(); }
+  else if (id === "repUnit") { state.rep.unit = ev.target.value; render(); }
+  else if (id === "repProject") { state.rep.project = ev.target.value; render(); }
+  else if (id === "repFrom") { state.rep.from = ev.target.value; render(); }
+  else if (id === "repTo") { state.rep.to = ev.target.value; render(); }
+  else if (ev.target.dataset && ev.target.dataset.sig) { updateSig(ev.target); }
 });
 document.addEventListener("keydown", ev => { if (ev.key === "Escape" && $("#modalRoot").innerHTML) closeModal(); });
 $("#search").addEventListener("input", ev => { state.q = ev.target.value; renderList(); });

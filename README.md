@@ -68,6 +68,32 @@ The first account registered becomes the administrator, unless `ADMIN_EMAIL` is 
 
 ---
 
+## Budgets
+
+Budgets are approved before a project starts, so the tracker records them rather than approving them.
+
+- **Approved budget.** On the project's **Budget** tab, the project leader or an administrator records the approved amount, the approval reference (for example a Board resolution or SARO number), the date approved and the fund source. It can also be entered when creating the project. If the amount changes later (augmentation, realignment or reduction), a reason is required, and the change is logged under **Changes to the approved budget**.
+- **Line items** break the approved budget down by expense class (PS, MOOE, CO) and item. The tab warns when line items don't add up to the approved budget.
+- **Utilized budget** is the total of the expenses recorded against the line items, each with a date and a DV/PR/OR reference. An expense larger than its line item's remaining balance is refused.
+- The Budget tab shows the approved amount, utilized amount, balance and utilization rate, overall and by expense class.
+
+## Reports
+
+Open **Reports** and choose a report, a period (annual, 1st or 2nd semester, a quarter, or custom dates), and optionally a category, college or office, or a single project.
+
+| Report | Contents |
+|---|---|
+| **Accomplishment Report** | I. Summary by category · II. Physical and financial accomplishment by project · III. Success indicators: targets vs. actual, with variance · IV. Highlights (status updates in the period) · V. Timeline adjustments and catch-up activities |
+| **Budget Utilization Report** | I. Summary by category · II. By expense class · III. By project (approved, utilized in period, utilized as of period end, balance, rate) · IV. Expenses recorded in the period |
+| **Project Status Summary** | One line per project: dates, schedule status, progress, accomplishment rate, approved and utilized budget, open queries, last update |
+
+Every report has the university header and seal and Prepared by / Reviewed by / Approved by lines. You can:
+- **Print or save as PDF.** It prints on A4 landscape.
+- **Download Excel.** Each section becomes a worksheet, with real numbers and peso and percent formats.
+- **Download CSV.**
+
+Under **Signatories and header**, anyone can adjust the names for the report they're printing. Administrators can save them as the default for everyone.
+
 ## Demo accounts
 
 To try every role, load the demo. It has five sample projects (one per category) with targets, budgets, expenses, a revised timeline, a catch-up activity, an open admin query, a concern from a user, and a pending join request.
