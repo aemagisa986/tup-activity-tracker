@@ -1,0 +1,1633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>University Activity Tracker</title>
+<meta name="theme-color" content="#6E1820">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: maroon masthead with a gold rule and the university seal; gray working surfaces below. Projects is a category-clustered index on the left and the selected project's file on the right. */
+/* Palette: maroon (brand, primary actions), gold/yellow (highlights, active nav, today), neutral grays (surfaces, text). */
+:root{
+  --bg:#F1F1F2; --surface:#FFFFFF; --sunk:#E7E7E9; --ink:#1F1F23; --muted:#5D5D66; --line:#D3D3D8;
+  --accent:#7B1C24; --accent-ink:#FFFFFF; --accent-soft:#F4E3E4; --today:#C99700;
+  --brand:#6E1820; --brand-2:#8C2530; --brand-ink:#FFFFFF; --brand-muted:#E9C9CC;
+  --gold:#F2C230; --gold-ink:#2A2000; --gold-soft:#FBF1CF;
+  --ok:#2E7A4D; --ok-soft:#E1F0E6; --warn:#B4570B; --warn-soft:#F8E7D6; --bad:#B0312C; --bad-soft:#F7DEDC; --idle:#62626C; --idle-soft:#E6E6EA;
+  --c-academic:#2F5D9E; --c-academic-s:#E1E9F5; --c-research:#6B4A9C; --c-research-s:#ECE5F5;
+  --c-extension:#9A5A12; --c-extension-s:#F6E8D4; --c-production:#5F6E12; --c-production-s:#ECEFD8;
+  --c-admin:#4A5A6A; --c-admin-s:#E2E7EC;
+  --f-display:"Literata", Georgia, "Times New Roman", serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141416; --surface:#1D1D20; --sunk:#18181B; --ink:#E9E9EC; --muted:#A2A2AC; --line:#2F2F35;
+  --accent:#E8939A; --accent-ink:#2A0A0E; --accent-soft:#3A1E21; --today:#F2C230;
+  --brand:#4A1016; --brand-2:#61171E; --brand-ink:#FFFFFF; --brand-muted:#D9B3B7;
+  --gold:#F2C230; --gold-ink:#2A2000; --gold-soft:#3A3115;
+  --ok:#62C08B; --ok-soft:#1A2E23; --warn:#F0A060; --warn-soft:#3A2717; --bad:#EE8A80; --bad-soft:#3D2120; --idle:#A6A6B0; --idle-soft:#26262B;
+  --c-academic:#8AB0E8; --c-academic-s:#1C2638; --c-research:#B9A0E6; --c-research-s:#28213A;
+  --c-extension:#E8B060; --c-extension-s:#352816; --c-production:#BCCB62; --c-production-s:#2A2E18;
+  --c-admin:#A8BACB; --c-admin-s:#222A32;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#141416; --surface:#1D1D20; --sunk:#18181B; --ink:#E9E9EC; --muted:#A2A2AC; --line:#2F2F35;
+  --accent:#E8939A; --accent-ink:#2A0A0E; --accent-soft:#3A1E21; --today:#F2C230;
+  --brand:#4A1016; --brand-2:#61171E; --brand-ink:#FFFFFF; --brand-muted:#D9B3B7;
+  --gold:#F2C230; --gold-ink:#2A2000; --gold-soft:#3A3115;
+  --ok:#62C08B; --ok-soft:#1A2E23; --warn:#F0A060; --warn-soft:#3A2717; --bad:#EE8A80; --bad-soft:#3D2120; --idle:#A6A6B0; --idle-soft:#26262B;
+  --c-academic:#8AB0E8; --c-academic-s:#1C2638; --c-research:#B9A0E6; --c-research-s:#28213A;
+  --c-extension:#E8B060; --c-extension-s:#352816; --c-production:#BCCB62; --c-production-s:#2A2E18;
+  --c-admin:#A8BACB; --c-admin-s:#222A32;
+  color-scheme:dark }
+
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+input,select,textarea{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+.app{display:flex;flex-direction:column;min-height:100%}
+.topbar{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;padding-block:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:linear-gradient(180deg,var(--brand-2),var(--brand));color:var(--brand-ink);
+  border-bottom:4px solid var(--gold);box-shadow:0 1px 0 var(--line)}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-text{display:flex;flex-direction:column;min-width:0}
+.brand h1{font-family:var(--f-display);font-weight:650;font-size:20px;margin:0;letter-spacing:-.01em;line-height:1.2;color:var(--brand-ink)}
+.brand-text span{font-size:12px;color:var(--brand-muted)}
+.logo{width:46px;height:46px;flex:none;display:inline-flex;align-items:center;justify-content:center}
+.logo img{width:100%;height:100%;object-fit:contain}
+.logo.has-img{background:#fff;border-radius:50%;padding:3px;box-sizing:border-box;box-shadow:0 0 0 2px var(--gold),0 2px 4px rgb(0 0 0 / .25)}
+.printhead .logo.has-img{box-shadow:none;padding:0}
+.logo-fb{width:44px;height:44px;border-radius:50%;background:var(--gold);color:var(--brand);border:2px solid var(--brand-ink);
+  display:inline-flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:650;font-size:13px;letter-spacing:.04em}
+.nav{display:flex;gap:2px;flex-wrap:wrap;margin-right:auto}
+.nav button{border:0;background:none;padding:7px 12px;border-radius:6px;font-weight:600;font-size:13px;color:var(--brand-muted);cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.nav button:hover{background:rgb(255 255 255 / .1);color:var(--brand-ink)}
+.nav button[aria-current="page"]{background:var(--gold);color:var(--gold-ink)}
+.badge{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-family:var(--f-mono)}
+.nav .badge{background:#fff;color:var(--brand)}
+.nav button[aria-current="page"] .badge{background:var(--brand);color:#fff}
+.who{display:flex;align-items:center;gap:8px;font-size:13px;min-width:0;color:var(--brand-ink)}
+.who .wn{font-weight:600;line-height:1.2}
+.who .wr{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.who .btn.ghost{color:var(--brand-ink)}
+.who .btn.ghost:hover{background:rgb(255 255 255 / .12)}
+.notice{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-block:9px;font-size:13px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:var(--warn-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+.notice.info{background:var(--gold-soft)}
+.notice b{font-weight:700}
+.notice .btn{margin-left:auto}
+
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);
+  border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;color:var(--ink);text-decoration:none}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--bad)}
+.btn.ghost{border-color:transparent;background:transparent;padding:5px 8px}
+.btn.ghost:hover{background:var(--sunk)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+.view{flex:1;min-height:0;display:flex;flex-direction:column}
+.shell{flex:1;display:grid;grid-template-columns:minmax(270px,330px) 1fr;min-height:0}
+.index{border-right:1px solid var(--line);background:var(--sunk);display:flex;flex-direction:column;min-width:0}
+.index-tools{display:flex;flex-direction:column;gap:10px;padding:16px}
+.search,.sel{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.plist{list-style:none;margin:0;padding:0 8px 16px;display:flex;flex-direction:column;gap:2px;overflow:auto}
+.ghead{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding:14px 12px 4px;display:flex;justify-content:space-between;gap:8px}
+.pitem{display:grid;gap:6px;padding:12px;border-radius:var(--r);cursor:pointer;border:1px solid transparent;text-align:left;background:none;width:100%}
+.pitem:hover{background:var(--surface)}
+.pitem[aria-current="true"]{background:var(--surface);border-color:var(--line);box-shadow:0 1px 2px rgb(0 0 0 / .05)}
+.pitem .pt{font-weight:600;line-height:1.3}
+.pitem .pm{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);align-items:center;min-width:0}
+.pitem .pm>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meter{height:4px;background:var(--line);border-radius:2px;overflow:hidden;display:block}
+.meter>i{display:block;height:100%;background:var(--accent);border-radius:2px;max-width:100%}
+.meter.warn>i{background:var(--warn)} .meter.bad>i{background:var(--bad)}
+.empty-list{padding:24px 16px;color:var(--muted);font-size:13px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-done{color:var(--ok);background:var(--ok-soft)}
+.s-ongoing{color:var(--accent);background:var(--accent-soft)}
+.s-behind{color:var(--warn);background:var(--warn-soft)}
+.s-late{color:var(--bad);background:var(--bad-soft)}
+.s-upcoming{color:var(--idle);background:var(--idle-soft)}
+.tagline{font-size:11px;font-weight:600;padding:1px 7px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.ctag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:4px;white-space:nowrap;letter-spacing:.02em}
+.c-academic{color:var(--c-academic);background:var(--c-academic-s)}
+.c-research{color:var(--c-research);background:var(--c-research-s)}
+.c-extension{color:var(--c-extension);background:var(--c-extension-s)}
+.c-production{color:var(--c-production);background:var(--c-production-s)}
+.c-admin{color:var(--c-admin);background:var(--c-admin-s)}
+.c-none{color:var(--idle);background:var(--idle-soft)}
+.cdot{width:8px;height:8px;border-radius:2px;display:inline-block;background:currentColor;margin-right:6px}
+
+.detail{min-width:0;overflow:auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.page{flex:1;overflow:auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.inner{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:24px;min-width:0}
+.back{display:none}
+.phead{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.phead h2,.ptitle{font-family:var(--f-display);font-weight:650;font-size:clamp(22px,3vw,30px);line-height:1.15;margin:4px 0 8px;text-wrap:balance}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);align-items:center}
+.facts b{color:var(--ink);font-weight:600}
+.pdesc{margin:12px 0 0;max-width:65ch;color:var(--ink);white-space:pre-wrap}
+.head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.summary>div{padding:14px 16px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:3px;min-width:0}
+.summary>div:first-child{border-left:0}
+.summary .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.summary .v{font-family:var(--f-display);font-size:24px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.2;overflow-wrap:anywhere}
+.summary .sub{font-size:12px;color:var(--muted)}
+
+.subtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.subtabs button{border:0;background:none;padding:9px 12px;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
+.subtabs button:hover{color:var(--ink)}
+.subtabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.subtabs .n{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:500}
+
+section.block{display:flex;flex-direction:column;gap:12px;min-width:0}
+.bhead{display:flex;align-items:baseline;gap:8px 12px;flex-wrap:wrap}
+.bhead h3{font-family:var(--f-display);font-weight:650;font-size:18px;margin:0}
+.bhead .count{color:var(--muted);font-size:13px}
+.bhead .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* timeline */
+.tl-wrap{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow-x:auto}
+.tl{min-width:640px;padding:12px 16px 16px;position:relative}
+.tl-grid{display:grid;grid-template-columns:180px 1fr;gap:0 12px}
+.tl-scale{position:relative;height:22px;border-bottom:1px solid var(--line)}
+.tl-scale span{position:absolute;top:0;font-size:11px;color:var(--muted);transform:translateX(2px);white-space:nowrap}
+.tl-scale i{position:absolute;bottom:-1px;width:1px;height:6px;background:var(--line)}
+.tl-label{font-size:13px;padding:9px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-track{position:relative;height:40px}
+.tl-track .gl{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.6}
+.bar{position:absolute;top:9px;height:16px;border-radius:4px;background:var(--accent-soft);border:1px solid var(--accent);overflow:hidden;min-width:4px}
+.bar>i{display:block;height:100%;background:var(--accent)}
+.bar.late{border-color:var(--bad);background:var(--bad-soft)}.bar.late>i{background:var(--bad)}
+.bar.behind{border-color:var(--warn);background:var(--warn-soft)}.bar.behind>i{background:var(--warn)}
+.bar.done{border-color:var(--ok);background:var(--ok)}
+.bar.catch{border-style:dashed}
+.base{position:absolute;top:29px;height:4px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px);opacity:.7}
+.today-line{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--today);pointer-events:none}
+.today-tag{position:absolute;top:0;font-size:10px;font-weight:700;color:var(--gold-ink);transform:translateX(4px);text-transform:uppercase;letter-spacing:.06em;background:var(--gold);padding:0 4px;border-radius:3px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg-base{width:22px;height:4px;background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px)}
+.lg-catch{width:22px;height:10px;border:1px dashed var(--accent);border-radius:3px}
+.lg-today{width:0;height:12px;border-left:2px dashed var(--today)}
+
+/* tables */
+.table-wrap{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+.table-wrap table{min-width:720px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--sunk);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+th.num,td.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:700;background:var(--sunk)}
+.prog{display:flex;align-items:center;gap:8px;min-width:120px}
+.prog .meter{flex:1}
+.row-actions{display:flex;gap:2px;justify-content:flex-end;flex-wrap:wrap}
+.aname{font-weight:600}
+.asub{font-size:12px;color:var(--muted)}
+td.grp{background:var(--sunk);font-weight:700;font-size:13px}
+.rate{font-weight:700}
+.rate.ok{color:var(--ok)} .rate.warn{color:var(--warn)} .rate.bad{color:var(--bad)}
+
+/* log & threads */
+.log{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.log li{display:grid;grid-template-columns:110px 1fr auto;gap:16px;padding:14px 16px;border-bottom:1px solid var(--line);align-items:start}
+.log li:last-child{border-bottom:0}
+.log .d{font-size:12px;color:var(--muted);padding-top:2px}
+.log .t{white-space:pre-wrap;min-width:0;overflow-wrap:anywhere}
+.log .tag{display:inline-block;font-size:12px;color:var(--accent);font-weight:600;margin-bottom:2px}
+.log .pg{font-size:12px;color:var(--muted);margin-top:2px}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:20px;color:var(--muted);font-size:13px;background:var(--surface)}
+
+.threads{display:flex;flex-direction:column;gap:10px}
+.thread{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0}
+.thread.attn{border-color:var(--warn)}
+.th-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;cursor:pointer;width:100%;text-align:left;background:none;border:0}
+.th-head .subj{font-weight:600;min-width:0;flex:1 1 200px;overflow-wrap:anywhere}
+.th-head .when{font-size:12px;color:var(--muted)}
+.kind{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+.k-query{color:var(--warn);background:var(--warn-soft)} .k-message{color:var(--accent);background:var(--accent-soft)} .k-concern{color:var(--idle);background:var(--idle-soft)}
+.posts{border-top:1px solid var(--line);padding:6px 14px 14px;display:flex;flex-direction:column;gap:2px}
+.post{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.post:last-of-type{border-bottom:0}
+.post .who-s{font-weight:600;font-size:13px}
+.post .who-s .r{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--c-admin);margin-left:6px}
+.post .tm{font-size:12px;color:var(--muted);text-align:right}
+.post .tx{grid-column:1/-1;white-space:pre-wrap;overflow-wrap:anywhere}
+.th-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:8px}
+.awaiting{font-size:11px;font-weight:700;color:var(--warn)}
+.closed{font-size:11px;font-weight:700;color:var(--ok)}
+
+/* admin & reports */
+.cats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.catcard{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0;border-top:3px solid currentColor}
+.catcard .cn{font-weight:700;font-size:13px;line-height:1.25}
+.catcard .big{font-family:var(--f-display);font-size:26px;font-weight:650;color:var(--ink);line-height:1}
+.catcard dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:3px 8px;font-size:12px;color:var(--muted)}
+.catcard dd{margin:0;color:var(--ink);font-family:var(--f-mono);text-align:right}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.mini{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.mini li{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mini li:last-child{border-bottom:0}
+.mini .grow{flex:1 1 180px;min-width:0}
+.mini a,.linkish{color:var(--accent);font-weight:600;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.controls .field{min-width:150px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:7px 12px;font-weight:600;font-size:13px;cursor:pointer;color:var(--muted);border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.rephead{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:end}
+.rephead h2{font-family:var(--f-display);font-size:24px;margin:0;font-weight:650}
+
+/* screens */
+.screen{max-width:560px;margin:8vh auto 0;display:flex;flex-direction:column;gap:14px;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+.screen h2{font-family:var(--f-display);margin:0;font-size:26px;font-weight:650;text-wrap:balance}
+.screen p{margin:0;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.welcome{max-width:560px;margin:8vh auto 0;display:flex;flex-direction:column;gap:12px;align-items:flex-start;color:var(--muted)}
+.welcome h2{font-family:var(--f-display);color:var(--ink);margin:0;font-size:24px}
+.ann{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:12px 14px;width:100%;color:var(--ink)}
+.ann .d{font-size:12px;color:var(--muted)}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgb(10 16 14 / .45);display:flex;align-items:flex-start;justify-content:center;
+  padding:max(40px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));z-index:20;overflow:auto}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:100%;max-width:580px;box-shadow:0 20px 50px rgb(0 0 0 / .25)}
+.modal header{padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal h3{margin:0;font-family:var(--f-display);font-size:18px;font-weight:650}
+.modal form{padding:16px 20px 20px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label,.flabel{font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:8px 10px;width:100%}
+.field textarea{min-height:90px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.check{display:flex;gap:8px;align-items:center;font-size:13px}
+.hint{font-size:12px;color:var(--muted)}
+.err{font-size:12px;color:var(--bad)}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:4px}
+input[type=range]{accent-color:var(--accent);padding:0;border:0;background:none}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;z-index:30;max-width:calc(100% - 32px)}
+
+@media (max-width:1000px){ .cats{grid-template-columns:repeat(2,minmax(0,1fr))} .two{grid-template-columns:1fr} }
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .index{border-right:0}
+  body.viewing .index{display:none}
+  body:not(.viewing) .shell .detail{display:none}
+  .back{display:inline-flex;align-self:flex-start}
+  .phead{grid-template-columns:1fr}
+  .head-actions{justify-content:flex-start}
+  .summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .summary>div:nth-child(3){border-left:0}
+  .summary>div:nth-child(n+3){border-top:1px solid var(--line)}
+  .log li{grid-template-columns:1fr;gap:4px}
+  .row2{grid-template-columns:1fr}
+  .row4{grid-template-columns:1fr 1fr}
+}
+@media (max-width:480px){ .cats{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:no-preference){ .pitem,.btn,.nav button{transition:background .12s,border-color .12s} }
+.screen .tabs2{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.screen .tabs2 button{border:0;background:none;padding:8px 12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.screen .tabs2 button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--gold-ink);font-weight:700;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.authbrand{display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;background:linear-gradient(180deg,var(--brand-2),var(--brand));color:var(--brand-ink);border-bottom:4px solid var(--gold)}
+.authbrand .logo{width:64px;height:64px}
+.authbrand .logo-fb{width:60px;height:60px;font-size:16px}
+.authbrand b{font-family:var(--f-display);font-size:18px;font-weight:650;display:block;line-height:1.2}
+.authbrand .brand-sub{font-size:12px;color:var(--brand-muted)}
+.authbrand .logo-fb{color:var(--brand)}
+.printhead{align-items:center;gap:12px;border-bottom:3px solid var(--brand);padding-bottom:8px}
+.printhead .logo{width:52px;height:52px}
+.printhead b{font-family:var(--f-display);font-size:16px;display:block}
+.print-only{display:none}
+@media print{
+  :root{--bg:#fff;--surface:#fff;--sunk:#f2f2f2;--ink:#000;--muted:#444;--line:#bbb}
+  .topbar,#notice,.controls,.rephead .acts,.no-print,.toast{display:none!important}
+  .page{overflow:visible;padding:0}
+  .app,.view{display:block}
+  .print-only{display:flex}
+  .table-wrap{overflow:visible;border-color:#999}
+  .table-wrap table{min-width:0;font-size:10px}
+  th,td{padding:4px 6px}
+  tr{break-inside:avoid}
+  section.block{break-inside:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand"><span id="brandLogo"></span><div class="brand-text"><h1>University Activity Tracker</h1><span>Technological University of the Philippines</span></div></div>
+    <nav class="nav" id="nav" aria-label="Sections"></nav>
+    <div class="who" id="who"></div>
+  </div>
+  <div id="notice"></div>
+  <div class="view" id="vProjects" hidden>
+    <div class="shell">
+      <aside class="index">
+        <div class="index-tools">
+          <input class="search" id="search" type="search" placeholder="Search projects, offices, leaders" aria-label="Search projects">
+          <div class="chips" id="scopeChips" role="group" aria-label="Which projects"></div>
+          <select class="sel" id="catSel" aria-label="Category"></select>
+          <div class="chips" id="chips" role="group" aria-label="Filter by schedule"></div>
+          <button class="btn primary" id="newProjectBtn" data-act="new-project">+ New project</button>
+        </div>
+        <ul class="plist" id="plist"></ul>
+      </aside>
+      <main class="detail" id="detail"></main>
+    </div>
+  </div>
+  <div class="view" id="vMessages" hidden><div class="page"><div class="inner" id="messagesInner"></div></div></div>
+  <div class="view" id="vReports" hidden><div class="page"><div class="inner" id="reportsInner"></div></div></div>
+  <div class="view" id="vAdmin" hidden><div class="page"><div class="inner" id="adminInner"></div></div></div>
+  <div class="view" id="vScreen" hidden></div>
+</div>
+<div id="modalRoot"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const TODAY = iso(new Date());
+const THIS_YEAR = new Date().getFullYear();
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+const DAY = 86400000;
+const days = (a,b) => Math.round((parse(b)-parse(a))/DAY);
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmt = s => { if(!s) return "—"; const d=parse(s); return MON[d.getMonth()]+" "+d.getDate()+", "+d.getFullYear(); };
+const fmtTs = t => { if(!t) return ""; const d=new Date(t); return MON[d.getMonth()]+" "+d.getDate()+", "+d.getFullYear()+" "+pad(d.getHours())+":"+pad(d.getMinutes()); };
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const num = v => { const n = Number(v); return isFinite(n) ? n : 0; };
+const peso = n => "₱" + num(n).toLocaleString("en-PH",{minimumFractionDigits:2, maximumFractionDigits:2});
+const pct = n => (isFinite(n) ? Math.round(n) : 0) + "%";
+
+const CATS = [
+  {k:"academic",   label:"Academic Projects",            short:"Academic"},
+  {k:"research",   label:"Research Projects",            short:"Research"},
+  {k:"extension",  label:"Community Extension Projects", short:"Extension"},
+  {k:"production", label:"Production Projects",          short:"Production"},
+  {k:"admin",      label:"Administration Projects",      short:"Administration"}
+];
+const catOf = k => CATS.find(c => c.k === k);
+const catTag = k => { const c = catOf(k); return c ? `<span class="ctag c-${k}">${c.short}</span>` : `<span class="ctag c-none">Uncategorized</span>`; };
+const PSTAT = {planning:"Planning", ongoing:"Ongoing", on_hold:"On hold", completed:"Completed", cancelled:"Cancelled"};
+const ECLASS = {PS:"Personal Services", MOOE:"Maintenance & Other Operating Expenses", CO:"Capital Outlay"};
+const QUARTERS = [["Q1","01-01","03-31"],["Q2","04-01","06-30"],["Q3","07-01","09-30"],["Q4","10-01","12-31"]];
+
+const STATUS = { done:{label:"Completed"}, ongoing:{label:"On track"}, behind:{label:"Behind schedule"}, late:{label:"Overdue"}, upcoming:{label:"Not started"} };
+function statusOf(start, end, progress){
+  progress = Number(progress)||0;
+  if (progress >= 100) return "done";
+  if (end && end < TODAY) return "late";
+  if (start && start > TODAY) return "upcoming";
+  if (start && end) {
+    const total = Math.max(1, days(start,end));
+    const expected = clamp(days(start,TODAY)/total*100, 0, 100);
+    if (progress + 15 < expected) return "behind";
+  }
+  return "ongoing";
+}
+const pill = st => `<span class="pill s-${st}">${STATUS[st].label}</span>`;
+
+const COLS = ["projects","activities","accomplishments","targets","budgetLines","expenses","revisions","joinRequests","threads","posts"];
+const state = {
+  boot:"loading", me:{id:null,name:"",avatarUrl:""}, isAdmin:false, canWrite:true,
+  members:[], membersLoaded:false, announcements:[], loaded:new Set(),
+  view:"projects", selected:null, tab:"overview", scope:"mine", cat:"all", filter:"all", q:"",
+  openThread:null, msgFilter:"attn",
+  rep:{year:THIS_YEAR, period:"annual", cat:"all", scope:"mine"}
+};
+COLS.forEach(c => state[c] = []);
+state.authTab = "login"; state.hasUsers = true; state.meActive = true; state.hasLogo = false;
+
+/* University seal: public/logo.svg (or logo.png if that's what's provided); a lettered badge if neither loads. */
+let LOGO_SRC = "logo.svg";
+const logoHtml = () => `<span class="logo${state.hasLogo ? " has-img" : ""}">${state.hasLogo ? `<img src="${LOGO_SRC}" alt="Technological University of the Philippines seal">` : `<span class="logo-fb" aria-label="TUP">TUP</span>`}</span>`;
+(function tryLogo(srcs){ if (!srcs.length) return; const im = new Image(); im.onload = () => { LOGO_SRC = srcs[0]; state.hasLogo = true; render(); }; im.onerror = () => tryLogo(srcs.slice(1)); im.src = srcs[0]; })(["logo.svg","logo.png"]);
+
+/* ---------- server API ---------- */
+async function api(method, url, body){
+  const opts = {method, credentials:"same-origin", headers:{"X-Requested-With":"uat"}};
+  if (body !== undefined) { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+  let r;
+  try { r = await fetch(url, opts); } catch(e){ const err = new Error("Can't reach the tracker server. Check that it's running and you're on the same network."); err.status = 0; throw err; }
+  let j = {}; try { j = await r.json(); } catch(e){}
+  if (!r.ok) { const err = new Error(j.error || "The server refused this request."); err.status = r.status; throw err; }
+  return j;
+}
+function upsert(col, doc){
+  if (!doc) return;
+  const key = col === "announcements" ? "announcements" : col;
+  if (!state[key]) return;
+  const i = state[key].findIndex(x => x.id === doc.id);
+  if (i >= 0) state[key][i] = doc; else state[key].push(doc);
+  if (key === "announcements") state.announcements.sort((a,b) => (b.createdAt||0)-(a.createdAt||0));
+}
+const add = (col, d) => api("POST", "/api/c/"+col, d).then(r => { upsert(col, r.doc); render(); scheduleRefresh(); return r.id; });
+const upd = (col, id, d) => api("PATCH", "/api/c/"+col+"/"+id, d).then(r => { upsert(col, r.doc); render(); scheduleRefresh(); });
+const del = (col, id) => api("DELETE", "/api/c/"+col+"/"+id).then(() => { if (state[col]) state[col] = state[col].filter(x => x.id !== id); render(); scheduleRefresh(); });
+async function write(fn, okMsg){
+  try { await fn(); if (okMsg) toast(okMsg); return true; }
+  catch(e){
+    if (e.status === 401) { toast("Your session ended. Sign in again."); state.boot = "auth"; render(); }
+    else toast(e.message || "Couldn't save. Try again.");
+    return false;
+  }
+}
+
+function setMe(me){
+  state.me = {id: me.id, name: me.fullName || "", email: me.email || ""};
+  state.isAdmin = me.role === "admin";
+  state.meActive = me.active !== false;
+}
+async function init(attempt = 1){
+  try {
+    const s = await api("GET", "/api/auth/status");
+    state.hasUsers = s.hasUsers; state.adminReserved = !!s.adminReserved; state.domains = s.domains || [];
+    if (!s.hasUsers) state.authTab = "register";
+  } catch(e){
+    // The host may still be waking the app up; keep trying for about a minute.
+    if ((e.status === 0 || e.status >= 500) && attempt < 12) { state.boot = "waking"; render(); setTimeout(() => init(attempt + 1), 5000); return; }
+  }
+  try { const r = await api("GET", "/api/me"); setMe(r.me); }
+  catch(e){ state.boot = e.status === 401 ? "auth" : "offline"; render(); return; }
+  startSession();
+}
+async function startSession(){
+  state.boot = "ok";
+  state.scope = state.isAdmin ? "all" : "mine";
+  state.rep.scope = state.isAdmin ? "all" : "mine";
+  render();
+  if (!state.meActive) return;
+  await refresh();
+  openEvents();
+}
+let refreshing = false, refreshAgain = false, refreshT = null;
+function scheduleRefresh(){ clearTimeout(refreshT); refreshT = setTimeout(refresh, 150); }
+async function refresh(){
+  if (refreshing) { refreshAgain = true; return; }
+  refreshing = true;
+  try {
+    const r = await api("GET", "/api/data");
+    setMe(r.me);
+    state.members = r.members;
+    COLS.forEach(c => { state[c] = r.data[c] || []; state.loaded.add(c); });
+    state.announcements = (r.data.announcements || []).sort((a,b) => (b.createdAt||0)-(a.createdAt||0));
+    state.membersLoaded = true;
+    if (state.selected && !state.projects.some(p => p.id === state.selected)) state.selected = null;
+    render();
+  } catch(e){
+    if (e.status === 401) { state.boot = "auth"; render(); }
+    else if (e.status === 403) { state.meActive = false; render(); }
+    else if (e.status === 0) toast(e.message);
+  } finally {
+    refreshing = false;
+    if (refreshAgain) { refreshAgain = false; scheduleRefresh(); }
+  }
+}
+let events = null;
+function openEvents(){
+  if (events) return;
+  if (!window.EventSource) { setInterval(refresh, 15000); return; }
+  events = new EventSource("/api/events");
+  events.addEventListener("change", scheduleRefresh);
+  events.onopen = scheduleRefresh;
+  events.onerror = () => {
+    // The browser reconnects by itself; if it has given up (e.g. after a server restart), start over.
+    if (events && events.readyState === 2) { events = null; setTimeout(() => { if (state.boot === "ok") { openEvents(); scheduleRefresh(); } }, 5000); }
+  };
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && state.boot === "ok") scheduleRefresh(); });
+async function signOut(){
+  try { await api("POST", "/api/auth/logout"); } catch(e){}
+  if (events) events.close();
+  location.reload();
+}
+
+/* ---------- people & access ---------- */
+const memberDoc = id => state.members.find(m => m.id === id);
+const myDoc = () => memberDoc(state.me.id);
+const nameOf = id => { if (!id) return "—"; const m = memberDoc(id); if (m && m.fullName) return m.fullName; if (id === state.me.id) return state.me.name || "You"; return "Unregistered user"; };
+const isLeader = p => !!state.me.id && p.leaderId === state.me.id;
+const isMember = p => !!state.me.id && (p.memberIds||[]).includes(state.me.id);
+const involved = p => isLeader(p) || isMember(p);
+const canManage = p => state.canWrite && (state.isAdmin || isLeader(p));
+const canUpdate = p => state.canWrite && (canManage(p) || isMember(p));
+const leaderLabel = p => p.leaderId ? nameOf(p.leaderId) : (p.lead || "Not assigned");
+const myRole = p => isLeader(p) ? "Leader" : isMember(p) ? "Member" : "";
+const pendingReq = p => state.joinRequests.find(r => r.projectId === p.id && r.uid === state.me.id && r.status === "pending");
+
+/* ---------- derived ---------- */
+const byProj = (col, pid) => state[col].filter(x => x.projectId === pid);
+const actsOf = pid => byProj("activities", pid).sort((a,b) => (a.start||"").localeCompare(b.start||"") || (a.createdAt||0)-(b.createdAt||0));
+const accsOf = pid => byProj("accomplishments", pid).sort((a,b) => (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
+const targetsOf = pid => byProj("targets", pid).sort((a,b) => (a.year||0)-(b.year||0) || (a.createdAt||0)-(b.createdAt||0));
+const linesOf = pid => byProj("budgetLines", pid).sort((a,b) => (a.createdAt||0)-(b.createdAt||0));
+const expOf = pid => byProj("expenses", pid).sort((a,b) => (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
+const revsOf = pid => byProj("revisions", pid).sort((a,b) => (b.at||0)-(a.at||0));
+const threadsOf = pid => byProj("threads", pid).sort((a,b) => (b.lastAt||0)-(a.lastAt||0));
+const postsOf = tid => state.posts.filter(p => p.threadId === tid).sort((a,b) => (a.at||0)-(b.at||0));
+function projProgress(p){
+  const acts = actsOf(p.id);
+  if (!acts.length) return Number(p.progress)||0;
+  return Math.round(acts.reduce((s,a) => s + (Number(a.progress)||0), 0) / acts.length);
+}
+const projStatus = p => statusOf(p.start, p.end, projProgress(p));
+function budgetOf(pid, from, to){
+  const alloc = linesOf(pid).reduce((s,l) => s + num(l.allocated), 0);
+  const ex = expOf(pid);
+  const spentAll = ex.reduce((s,e) => s + num(e.amount), 0);
+  const spent = from ? ex.filter(e => e.date >= from && e.date <= to).reduce((s,e) => s + num(e.amount), 0) : spentAll;
+  return {alloc, spent, spentAll, bal: alloc - spentAll, rate: alloc ? spentAll/alloc*100 : 0};
+}
+function threadAttn(t){
+  if (t.closed) return false;
+  if (state.isAdmin) return t.awaiting === "admin";
+  const p = state.projects.find(x => x.id === t.projectId);
+  return t.awaiting === "user" && p && involved(p);
+}
+const attnCount = () => state.threads.filter(threadAttn).length;
+function visibleThreads(){
+  if (state.isAdmin) return state.threads;
+  return state.threads.filter(t => { const p = state.projects.find(x => x.id === t.projectId); return p && involved(p); });
+}
+
+/* ---------- render ---------- */
+function render(){
+  renderNav(); renderNotice();
+  const gate = gateScreen();
+  const views = {vProjects:"projects", vMessages:"messages", vReports:"reports", vAdmin:"admin"};
+  $("#vScreen").hidden = !gate;
+  Object.entries(views).forEach(([id,v]) => $("#"+id).hidden = !!gate || state.view !== v);
+  if (gate) { if ($("#vScreen").dataset.g !== gate) { $("#vScreen").innerHTML = gate; $("#vScreen").dataset.g = gate; } return; }
+  $("#vScreen").dataset.g = "";
+  if (state.view === "projects") renderProjects();
+  else if (state.view === "messages") renderMessages();
+  else if (state.view === "reports") renderReports();
+  else if (state.view === "admin" && state.isAdmin) renderAdmin();
+}
+
+function gateScreen(){
+  if (state.boot === "loading") return `<div class="screen"><h2>Opening the tracker…</h2><p>Connecting to the server.</p></div>`;
+  if (state.boot === "waking") return `<div class="screen"><h2>Starting the tracker…</h2><p>The server was idle and is waking up. This usually takes under a minute; the page will open by itself.</p></div>`;
+  if (state.boot === "offline") return `<div class="screen"><h2>Can't reach the tracker server</h2><p>Check your internet connection and reload this page. If it still doesn't open, the server may be down; tell the administrator.</p></div>`;
+  if (state.boot === "auth") return authScreen();
+  if (!state.meActive) return `<div class="screen"><h2>Your account is deactivated</h2><p>An administrator has turned off your access to project records. Contact the planning office if you think this is a mistake.</p><div><button class="btn" data-act="signout">Sign out</button></div></div>`;
+  if (!state.membersLoaded) return `<div class="screen"><h2>Opening the tracker…</h2><p>Loading members and projects.</p></div>`;
+  return "";
+}
+
+function authScreen(){
+  setTimeout(bindAuth);
+  const reg = state.authTab === "register";
+  return `<div class="screen">
+    <div class="authbrand">${logoHtml()}<div><b>University Activity Tracker</b><span class="brand-sub">Technological University of the Philippines</span></div></div>
+    <h2>${reg ? "Create your account" : "Sign in"}</h2>
+    <p>${!state.hasUsers && !state.adminReserved ? "No accounts exist yet. The first person to register becomes the administrator." : reg ? "Register to create projects, join colleagues' projects and report accomplishments." : "Use the email and password you registered with."}
+      ${reg && (state.domains||[]).length ? ` Use your university email (${state.domains.map(d => "@" + esc(d)).join(" or ")}).` : ""}</p>
+    <div class="tabs2" role="tablist"><button role="tab" data-act="authtab" data-k="login" aria-selected="${!reg}">Sign in</button><button role="tab" data-act="authtab" data-k="register" aria-selected="${reg}">Register</button></div>
+    ${reg ? `<form class="card" id="authForm" data-mode="register" novalidate>
+      <div class="field"><label for="r-name">Full name (as it should appear on reports)</label><input id="r-name" name="fullName" autocomplete="name"></div>
+      <div class="field"><label for="r-email">Email</label><input id="r-email" name="email" type="email" autocomplete="email" placeholder="name@university.edu.ph"></div>
+      <div class="field"><label for="r-office">College / office / unit</label><input id="r-office" name="office" placeholder="e.g. College of Engineering"></div>
+      <div class="row2">
+        <div class="field"><label for="r-pos">Position / designation</label><input id="r-pos" name="position" placeholder="e.g. Associate Professor II"></div>
+        <div class="field"><label for="r-phone">Contact number (optional)</label><input id="r-phone" name="phone" inputmode="tel" placeholder="09xx xxx xxxx"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="r-pw">Password</label><input id="r-pw" name="password" type="password" autocomplete="new-password"><span class="hint">At least 8 characters</span></div>
+        <div class="field"><label for="r-pw2">Confirm password</label><input id="r-pw2" name="password2" type="password" autocomplete="new-password"></div>
+      </div>
+      <div class="err" id="authErr" hidden></div>
+      <div class="form-actions"><button class="btn primary" type="submit" id="authBtn">Register</button></div>
+    </form>` : `<form class="card" id="authForm" data-mode="login" novalidate>
+      <div class="field"><label for="l-email">Email</label><input id="l-email" name="email" type="email" autocomplete="username"></div>
+      <div class="field"><label for="l-pw">Password</label><input id="l-pw" name="password" type="password" autocomplete="current-password"></div>
+      <div class="err" id="authErr" hidden></div>
+      <div class="form-actions"><span class="hint" style="margin-right:auto">Forgot your password? Ask an administrator to reset it.</span><button class="btn primary" type="submit" id="authBtn">Sign in</button></div>
+    </form>`}
+  </div>`;
+}
+function bindAuth(){
+  const f = $("#authForm"); if (!f || f.dataset.bound) return; f.dataset.bound = "1";
+  const showErr = msg => { $("#authErr").textContent = msg; $("#authErr").hidden = false; };
+  f.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const fd = Object.fromEntries(new FormData(f).entries());
+    const reg = f.dataset.mode === "register";
+    if (reg) {
+      const err = !fd.fullName.trim() ? "Enter your full name." : !fd.email.trim() ? "Enter your email." : !fd.office.trim() ? "Enter your college or office."
+        : fd.password.length < 8 ? "Use a password of at least 8 characters." : fd.password !== fd.password2 ? "The two passwords don't match." : null;
+      if (err) return showErr(err);
+    } else if (!fd.email.trim() || !fd.password) return showErr("Enter your email and password.");
+    $("#authBtn").disabled = true;
+    try {
+      const r = reg ? await api("POST", "/api/auth/register", {fullName:fd.fullName, email:fd.email, office:fd.office, position:fd.position, phone:fd.phone, password:fd.password})
+                    : await api("POST", "/api/auth/login", {email:fd.email, password:fd.password});
+      setMe(r.me);
+      toast(reg ? (state.isAdmin ? "Registered. You're the administrator." : "Registered. Welcome!") : "Signed in");
+      startSession();
+    } catch(e){ showErr(e.message); $("#authBtn").disabled = false; }
+  });
+}
+
+function renderNav(){
+  const bl = $("#brandLogo"); const lh = logoHtml(); if (bl.dataset.v !== lh) { bl.innerHTML = lh; bl.dataset.v = lh; }
+  const n = state.boot === "ok" ? attnCount() : 0;
+  const items = [["projects","Projects"],["messages","Messages"],["reports","Reports"]];
+  if (state.isAdmin) items.push(["admin","Admin"]);
+  $("#nav").innerHTML = state.boot !== "ok" ? "" : items.map(([k,l]) => `<button data-act="nav" data-k="${k}" aria-current="${state.view===k?"page":"false"}">${l}${k==="messages" && n ? ` <span class="badge" aria-label="${n} need attention">${n}</span>` : ""}</button>`).join("");
+  const m = myDoc();
+  const nm = (m && m.fullName) || state.me.name || "You";
+  const initials = nm.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join("");
+  $("#who").innerHTML = state.boot === "ok" && state.me.id ? `<span class="avatar" aria-hidden="true">${esc(initials)}</span><div><div class="wn"></div><div class="wr">${state.isAdmin ? "Administrator" : "Project user"}</div></div>
+    <button class="btn ghost sm" data-act="account">Account</button><button class="btn ghost sm" data-act="signout">Sign out</button>` : "";
+  const wn = $("#who .wn"); if (wn) wn.textContent = nm;
+}
+
+function renderNotice(){
+  let html = "";
+  if (state.boot === "ok" && state.meActive) {
+    const a = state.announcements[0];
+    if (a && !dismissed(a.id) && !state.isAdmin) html += `<div class="notice info"><span><b>Announcement · ${esc(fmtTs(a.createdAt))}</b> — <span class="annt"></span></span><button class="btn sm ghost" data-act="dismiss-ann" data-id="${a.id}">Dismiss</button></div>`;
+  }
+  $("#notice").innerHTML = html;
+  const t = $("#notice .annt"); if (t) t.textContent = state.announcements[0].text;
+}
+function dismissed(id){ try { return localStorage.getItem("uat-ann") === id; } catch(e){ return false; } }
+
+/* ----- Projects view ----- */
+function renderProjects(){
+  $("#newProjectBtn").hidden = !state.canWrite || (!myDoc() && !state.isAdmin);
+  const scopes = state.isAdmin ? [["all","All projects"],["mine","Mine"]] : [["mine","My projects"],["all","Browse all"]];
+  $("#scopeChips").innerHTML = state.me.id || state.isAdmin ? scopes.map(([k,l]) => `<button class="chip" data-act="scope" data-k="${k}" aria-pressed="${state.scope===k}">${l}</button>`).join("") : "";
+  const sel = $("#catSel");
+  const catOpts = `<option value="all">All categories</option>` + CATS.map(c => `<option value="${c.k}">${c.label}</option>`).join("") + `<option value="none">Uncategorized</option>`;
+  if (sel.dataset.v !== catOpts) { sel.innerHTML = catOpts; sel.dataset.v = catOpts; }
+  sel.value = state.cat;
+  renderChips(); renderList(); renderDetail();
+}
+function scopedProjects(){
+  return state.projects.filter(p => state.scope === "all" || involved(p));
+}
+function renderChips(){
+  const base = scopedProjects().filter(p => state.cat === "all" || (p.category || "none") === state.cat);
+  const counts = {all: base.length};
+  base.forEach(p => { const s = projStatus(p); counts[s] = (counts[s]||0)+1; });
+  const opts = [["all","All"],["ongoing","On track"],["behind","Behind"],["late","Overdue"],["upcoming","Not started"],["done","Completed"]];
+  $("#chips").innerHTML = opts.map(([k,l]) => `<button class="chip" data-act="filter" data-k="${k}" aria-pressed="${state.filter===k}">${l} <span class="mono">${counts[k]||0}</span></button>`).join("");
+}
+function renderList(){
+  const q = state.q.trim().toLowerCase();
+  if (!state.loaded.has("projects")) { $("#plist").innerHTML = `<li class="empty-list">Loading projects…</li>`; return; }
+  const rows = scopedProjects()
+    .filter(p => state.cat === "all" || (p.category || "none") === state.cat)
+    .filter(p => state.filter === "all" || projStatus(p) === state.filter)
+    .filter(p => !q || [p.title,p.unit,leaderLabel(p)].some(v => (v||"").toLowerCase().includes(q)));
+  if (!rows.length) {
+    let msg = "No projects match this filter.";
+    if (!state.projects.length) msg = "No projects yet. Use “New project” to add the first one.";
+    else if (state.scope === "mine" && !scopedProjects().length) msg = "You don't lead or belong to any project yet. Create one, or choose “Browse all” to find a project and ask to join.";
+    $("#plist").innerHTML = `<li class="empty-list">${msg}</li>`; return;
+  }
+  const groups = [...CATS.map(c => c.k), "none"];
+  $("#plist").innerHTML = groups.map(g => {
+    const list = rows.filter(p => (catOf(p.category) ? p.category : "none") === g).sort((a,b) => (a.end||"").localeCompare(b.end||""));
+    if (!list.length) return "";
+    const c = catOf(g);
+    return `<li class="ghead ${c ? "c-"+g : "c-none"}" style="background:none"><span><span class="cdot"></span>${c ? c.label : "Uncategorized"}</span><span class="mono">${list.length}</span></li>` +
+      list.map(p => {
+        const pr = projProgress(p), st = projStatus(p), role = myRole(p);
+        return `<li><button class="pitem" data-act="select" data-id="${p.id}" aria-current="${state.selected===p.id}">
+          <span class="pt">${esc(p.title)}</span>
+          <span class="pm"><span>${esc(p.unit||"—")} · ${esc(leaderLabel(p))}</span>${pill(st)}</span>
+          <span class="meter"><i style="width:${pr}%"></i></span>
+          <span class="pm mono"><span>${fmt(p.start)} – ${fmt(p.end)}</span><span>${role ? `<span class="tagline">${role}</span> ` : ""}${pr}%</span></span>
+        </button></li>`;
+      }).join("");
+  }).join("");
+}
+
+function renderDetail(){
+  const el = $("#detail");
+  const p = state.projects.find(x => x.id === state.selected);
+  document.body.classList.toggle("viewing", !!p && state.view === "projects");
+  if (!p) {
+    const ann = state.announcements.slice(0,3);
+    const canCreate = state.canWrite && (myDoc() || state.isAdmin);
+    el.innerHTML = `<div class="welcome"><h2>Select a project</h2>
+      <p>Pick a project to see its schedule, targets, budget and updates${canCreate ? ", or start a new one. Other users can ask to join projects you lead." : "."}</p>
+      ${canCreate ? `<button class="btn primary" data-act="new-project">+ New project</button>` : ""}
+      ${ann.length ? `<h3 class="flabel" style="margin-top:16px">From the administrator</h3>${ann.map(a => `<div class="ann"><div class="d mono">${esc(fmtTs(a.createdAt))}</div><div class="t" data-ann="${a.id}"></div></div>`).join("")}` : ""}
+    </div>`;
+    ann.forEach(a => { const t = el.querySelector(`[data-ann="${a.id}"]`); if (t) t.textContent = a.text; });
+    return;
+  }
+  const acts = actsOf(p.id);
+  const pr = projProgress(p), st = projStatus(p);
+  let timeNote = "—", timeSub = "";
+  if (p.start && p.end) {
+    if (TODAY < p.start) { timeNote = days(TODAY,p.start); timeSub = "days until start"; }
+    else if (TODAY > p.end) { timeNote = days(p.end,TODAY); timeSub = "days past end date"; }
+    else { timeNote = days(TODAY,p.end); timeSub = "days remaining"; }
+  }
+  const b = budgetOf(p.id);
+  const doneActs = acts.filter(a => (Number(a.progress)||0) >= 100).length;
+  const M = canManage(p), U = canUpdate(p);
+  const revisedEnd = p.baseEnd && p.baseEnd !== p.end;
+  const req = pendingReq(p);
+  let joinBtn = "";
+  if (state.canWrite && myDoc() && !involved(p)) joinBtn = req ? `<button class="btn" disabled>Request sent</button>` : `<button class="btn primary" data-act="join" data-id="${p.id}">Request to join</button>`;
+  if (isMember(p) && !isLeader(p)) joinBtn = `<button class="btn" data-act="leave" data-id="${p.id}">Leave project</button>`;
+  const tc = {
+    targets: targetsOf(p.id).length, updates: accsOf(p.id).length,
+    team: (p.memberIds||[]).length + (p.leaderId?1:0),
+    msgs: threadsOf(p.id).length, attn: threadsOf(p.id).some(threadAttn),
+    reqs: M ? state.joinRequests.filter(r => r.projectId === p.id && r.status === "pending").length : 0
+  };
+  const tabs = [["overview","Overview",""],["targets","Targets",tc.targets],["budget","Budget",""],["updates","Status updates",tc.updates],["team","Team",tc.team],["messages","Messages",tc.msgs]];
+  el.innerHTML = `<div class="inner">
+    <button class="btn ghost back" data-act="back">← All projects</button>
+    <div class="phead">
+      <div style="min-width:0">
+        <div class="eyebrow">${catTag(p.category)} <span>${esc(p.unit || "")}</span></div>
+        <h2>${esc(p.title)}</h2>
+        <div class="facts">
+          ${pill(st)}
+          ${p.status ? `<span class="tagline">Reported: ${esc(PSTAT[p.status]||p.status)}</span>` : ""}
+          <span>Start <b class="mono">${fmt(p.start)}</b></span>
+          <span>End <b class="mono">${fmt(p.end)}</b>${revisedEnd ? ` <span class="tagline" title="Original end: ${fmt(p.baseEnd)}">revised</span>` : ""}</span>
+          <span>Leader <b>${esc(leaderLabel(p))}</b></span>
+          ${myRole(p) ? `<span class="tagline">You: ${myRole(p)}</span>` : ""}
+        </div>
+      </div>
+      <div class="head-actions">
+        ${joinBtn}
+        ${U ? `<button class="btn primary" data-act="new-acc">Post update</button>` : ""}
+        ${M ? `<button class="btn" data-act="edit-project" data-id="${p.id}">Edit</button><button class="btn danger" data-act="delete-project" data-id="${p.id}">Delete</button>` : ""}
+      </div>
+    </div>
+
+    <div class="summary">
+      <div><span class="k">Overall progress</span><span class="v">${pr}%</span><span class="meter"><i style="width:${pr}%"></i></span></div>
+      <div><span class="k">Sub-activities</span><span class="v">${doneActs}/${acts.length}</span><span class="sub">completed</span></div>
+      <div><span class="k">Budget used</span><span class="v">${b.alloc ? pct(b.rate) : "—"}</span><span class="sub mono">${b.alloc ? peso(b.spentAll)+" of "+peso(b.alloc) : "No allocation yet"}</span></div>
+      <div><span class="k">Schedule</span><span class="v">${timeNote}</span><span class="sub">${timeSub}</span></div>
+    </div>
+
+    <div class="subtabs" role="tablist">${tabs.map(([k,l,n]) => `<button role="tab" data-act="tab" data-k="${k}" aria-selected="${state.tab===k}">${l}${n !== "" && n ? ` <span class="n">${n}</span>` : ""}${(k==="messages" && tc.attn) || (k==="team" && tc.reqs) ? ` <span class="badge">${k==="team" ? tc.reqs : "!"}</span>` : ""}</button>`).join("")}</div>
+    ${tabBody(p)}
+  </div>`;
+  el.querySelectorAll("[data-text]").forEach(n => { n.textContent = n.dataset.text; });
+}
+
+function tabBody(p){
+  switch (state.tab) {
+    case "targets": return tabTargets(p);
+    case "budget": return tabBudget(p);
+    case "updates": return tabUpdates(p);
+    case "team": return tabTeam(p);
+    case "messages": return tabMessages(p);
+    default: return tabOverview(p);
+  }
+}
+
+function tabOverview(p){
+  const acts = actsOf(p.id), revs = revsOf(p.id);
+  const M = canManage(p), U = canUpdate(p);
+  return `
+    ${p.description ? `<p class="pdesc">${esc(p.description)}</p>` : ""}
+    ${p.fundSource ? `<div class="facts"><span>Fund source <b>${esc(p.fundSource)}</b></span></div>` : ""}
+    <section class="block">
+      <div class="bhead"><h3>Schedule</h3>
+        ${M ? `<div class="acts"><button class="btn" data-act="revise" data-id="">Revise project dates</button></div>` : ""}</div>
+      ${timeline(p, acts)}
+      <div class="legend"><span><span class="lg-base"></span>Original dates, where revised</span><span><span class="lg-catch"></span>Catch-up activity</span><span><span class="lg-today"></span>Today</span></div>
+    </section>
+    <section class="block">
+      <div class="bhead"><h3>Sub-activities</h3><span class="count">${acts.length}</span>
+        ${M ? `<div class="acts"><button class="btn" data-act="new-catchup">+ Catch-up activity</button><button class="btn primary" data-act="new-activity">+ Sub-activity</button></div>` : ""}</div>
+      ${acts.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Sub-activity</th><th>Start</th><th>End</th><th>Progress</th><th>Status</th>${U?"<th></th>":""}</tr></thead>
+        <tbody>${acts.map(a => {
+          const rev = a.baseEnd && (a.baseEnd !== a.end || a.baseStart !== a.start);
+          return `<tr>
+          <td><div class="aname">${esc(a.name)} ${a.catchUp ? `<span class="tagline">Catch-up</span>` : ""}</div>${a.assignee ? `<div class="asub">${esc(a.assignee)}</div>` : ""}${rev ? `<div class="asub">Originally ${fmt(a.baseStart)} – ${fmt(a.baseEnd)}</div>` : ""}</td>
+          <td class="mono">${fmt(a.start)}</td><td class="mono">${fmt(a.end)}</td>
+          <td><div class="prog"><span class="meter"><i style="width:${Number(a.progress)||0}%"></i></span><span class="mono">${Number(a.progress)||0}%</span></div></td>
+          <td>${pill(statusOf(a.start,a.end,a.progress))}</td>
+          ${U ? `<td><div class="row-actions">
+            <button class="btn ghost" data-act="progress" data-id="${a.id}">Progress</button>
+            ${M ? `<button class="btn ghost" data-act="revise" data-id="${a.id}">Revise dates</button>
+            <button class="btn ghost" data-act="edit-activity" data-id="${a.id}">Edit</button>
+            <button class="btn ghost danger" data-act="delete-activity" data-id="${a.id}">Delete</button>` : ""}</div></td>` : ""}
+        </tr>`; }).join("")}</tbody></table></div>`
+      : `<div class="empty">No sub-activities yet. Break this project into steps with their own dates to track progress.</div>`}
+    </section>
+    <section class="block">
+      <div class="bhead"><h3>Timeline changes</h3><span class="count">${revs.length}</span></div>
+      ${revs.length ? `<ul class="log">${revs.map(r => {
+        const a = state.activities.find(x => x.id === r.activityId);
+        const what = r.kind === "catchup" ? "Catch-up activity added" : (r.activityId ? "Dates revised: " + (a ? a.name : "removed sub-activity") : "Project dates revised");
+        return `<li><div class="d mono">${esc(fmtTs(r.at))}</div><div class="t"><span class="tag">${esc(what)}</span><br>
+          <span class="mono">${r.kind === "catchup" ? "" : fmt(r.oldStart)+" – "+fmt(r.oldEnd)+" → "}${fmt(r.newStart)} – ${fmt(r.newEnd)}</span>
+          <div class="pg">Reason: <span data-text="${esc(r.reason)}"></span> · by ${esc(nameOf(r.by))}</div></div><span></span></li>`; }).join("")}</ul>`
+      : `<div class="empty">No timeline changes. When dates slip, use “Revise dates” or add a catch-up activity; each change is logged here with its reason for the admin to see.</div>`}
+    </section>`;
+}
+
+function timeline(p, acts){
+  const all = [p, ...acts];
+  const starts = all.flatMap(r => [r.start, r.baseStart]).filter(Boolean).sort();
+  const ends = all.flatMap(r => [r.end, r.baseEnd]).filter(Boolean).sort();
+  if (!starts.length || !ends.length) return `<div class="empty">Add start and end dates to see the schedule.</div>`;
+  const s0 = starts[0], e0 = ends[ends.length-1];
+  const span = Math.max(1, days(s0, e0) + 1);
+  const pos = d => clamp(days(s0, d) / span * 100, 0, 100);
+  const ticks = []; const first = parse(s0); let m = new Date(first.getFullYear(), first.getMonth(), 1);
+  const months = []; while (iso(m) <= e0) { months.push(new Date(m)); m = new Date(m.getFullYear(), m.getMonth()+1, 1); }
+  const step = Math.max(1, Math.ceil(months.length / 10));
+  months.forEach((d,i) => { if (i % step) return; const k = iso(d) < s0 ? s0 : iso(d);
+    ticks.push({x:pos(k), label: MON[d.getMonth()] + (d.getMonth()===0 || i===0 ? " " + d.getFullYear() : "")}); });
+  const showToday = TODAY >= s0 && TODAY <= e0;
+  const tx = pos(TODAY);
+  const rows = [{name:"Whole project", start:p.start, end:p.end, baseStart:p.baseStart, baseEnd:p.baseEnd, progress:projProgress(p), strong:true}, ...acts];
+  const gl = ticks.map(t => `<span class="gl" style="left:${t.x}%"></span>`).join("");
+  return `<div class="tl-wrap"><div class="tl"><div class="tl-grid">
+    <div></div>
+    <div class="tl-scale">${ticks.map(t => `<span style="left:${t.x}%">${t.label}</span><i style="left:${t.x}%"></i>`).join("")}
+      ${showToday ? `<span class="today-tag" style="left:${tx}%">Today</span>` : ""}</div>
+    ${rows.map(r => {
+      const st = statusOf(r.start, r.end, r.progress);
+      const ok = r.start && r.end;
+      const L = ok ? pos(r.start) : 0, W = ok ? Math.max(0.6, (days(r.start, r.end)+1)/span*100) : 0;
+      const rev = r.baseStart && r.baseEnd && (r.baseStart !== r.start || r.baseEnd !== r.end);
+      const BL = rev ? pos(r.baseStart) : 0, BW = rev ? Math.max(0.6, (days(r.baseStart, r.baseEnd)+1)/span*100) : 0;
+      return `<div class="tl-label" title="${esc(r.name)}" style="${r.strong?"font-weight:700":""}">${esc(r.name)}</div>
+        <div class="tl-track">${gl}${ok ? `<div class="bar ${st} ${r.catchUp?"catch":""}" style="left:${L}%;width:${Math.min(W,100-L)}%" title="${esc(r.name)}: ${fmt(r.start)} – ${fmt(r.end)}, ${Number(r.progress)||0}%"><i style="width:${Number(r.progress)||0}%"></i></div>` : ""}
+        ${rev ? `<span class="base" style="left:${BL}%;width:${Math.min(BW,100-BL)}%" title="Original: ${fmt(r.baseStart)} – ${fmt(r.baseEnd)}"></span>` : ""}
+        ${showToday ? `<span class="today-line" style="left:${tx}%"></span>` : ""}</div>`;
+    }).join("")}
+  </div></div></div>`;
+}
+
+function rateClass(r){ return r >= 100 ? "ok" : r >= 75 ? "" : r >= 50 ? "warn" : "bad"; }
+function tabTargets(p){
+  const ts = targetsOf(p.id), M = canManage(p), U = canUpdate(p);
+  return `<section class="block">
+    <div class="bhead"><h3>Targets and accomplishments</h3><span class="count">Quarterly targets set against actual outputs</span>
+      ${M ? `<div class="acts"><button class="btn primary" data-act="new-target">+ Target</button></div>` : ""}</div>
+    ${ts.length ? `<div class="table-wrap"><table>
+      <thead><tr><th>Indicator</th><th>Year</th>${QUARTERS.map(q => `<th class="num">${q[0]}<br>target / actual</th>`).join("")}<th class="num">Annual</th><th class="num">Rate</th>${U?"<th></th>":""}</tr></thead>
+      <tbody>${ts.map(t => {
+        const T = (t.q||[]).reduce((s,v)=>s+num(v),0), A = (t.a||[]).reduce((s,v)=>s+num(v),0);
+        const r = T ? A/T*100 : 0;
+        return `<tr><td><div class="aname">${esc(t.indicator)}</div><div class="asub">${esc(t.unit||"")}</div></td>
+          <td class="mono">${esc(t.year)}</td>
+          ${[0,1,2,3].map(i => `<td class="num">${num((t.q||[])[i])} / <b>${num((t.a||[])[i])}</b></td>`).join("")}
+          <td class="num">${T} / <b>${A}</b></td>
+          <td class="num"><span class="rate ${T?rateClass(r):""}">${T ? pct(r) : "—"}</span></td>
+          ${U ? `<td><div class="row-actions"><button class="btn ghost" data-act="actuals" data-id="${t.id}">Enter actuals</button>
+            ${M ? `<button class="btn ghost" data-act="edit-target" data-id="${t.id}">Edit</button><button class="btn ghost danger" data-act="delete-target" data-id="${t.id}">Delete</button>` : ""}</div></td>` : ""}
+        </tr>`; }).join("")}</tbody></table></div>`
+    : `<div class="empty">No targets set. Add each success indicator with its quarterly targets (for example: “Faculty trained”, 20 per quarter). Members then enter actual outputs each quarter, and the reports compute the accomplishment rate.</div>`}
+  </section>`;
+}
+
+function tabBudget(p){
+  const lines = linesOf(p.id), ex = expOf(p.id), b = budgetOf(p.id), M = canManage(p), U = canUpdate(p);
+  const spentBy = id => ex.filter(e => e.lineId === id).reduce((s,e)=>s+num(e.amount),0);
+  const unassigned = ex.filter(e => !lines.some(l => l.id === e.lineId)).reduce((s,e)=>s+num(e.amount),0);
+  return `
+  <div class="summary">
+    <div><span class="k">Allocated</span><span class="v mono" style="font-size:20px">${peso(b.alloc)}</span><span class="sub">${lines.length} budget line${lines.length===1?"":"s"}</span></div>
+    <div><span class="k">Utilized</span><span class="v mono" style="font-size:20px">${peso(b.spentAll)}</span><span class="sub">${ex.length} expense entr${ex.length===1?"y":"ies"}</span></div>
+    <div><span class="k">Balance</span><span class="v mono" style="font-size:20px;${b.bal<0?"color:var(--bad)":""}">${peso(b.bal)}</span><span class="sub">${b.bal<0?"Over budget":"Remaining"}</span></div>
+    <div><span class="k">Utilization rate</span><span class="v">${b.alloc ? pct(b.rate) : "—"}</span><span class="meter ${b.rate>100?"bad":b.rate>90?"warn":""}"><i style="width:${clamp(b.rate,0,100)}%"></i></span></div>
+  </div>
+  <section class="block">
+    <div class="bhead"><h3>Allocation</h3><span class="count">By expense class and item</span>
+      ${M ? `<div class="acts"><button class="btn primary" data-act="new-line">+ Budget line</button></div>` : ""}</div>
+    ${lines.length ? `<div class="table-wrap"><table>
+      <thead><tr><th>Class</th><th>Item / particulars</th><th class="num">Allocated</th><th class="num">Utilized</th><th class="num">Balance</th><th>Use</th>${M?"<th></th>":""}</tr></thead>
+      <tbody>${lines.map(l => { const s = spentBy(l.id), r = num(l.allocated) ? s/num(l.allocated)*100 : 0; return `<tr>
+        <td><span class="tagline" title="${esc(ECLASS[l.cls]||"")}">${esc(l.cls||"—")}</span></td><td>${esc(l.item)}</td>
+        <td class="num">${peso(l.allocated)}</td><td class="num">${peso(s)}</td><td class="num" style="${num(l.allocated)-s<0?"color:var(--bad)":""}">${peso(num(l.allocated)-s)}</td>
+        <td><div class="prog"><span class="meter ${r>100?"bad":r>90?"warn":""}"><i style="width:${clamp(r,0,100)}%"></i></span><span class="mono">${pct(r)}</span></div></td>
+        ${M ? `<td><div class="row-actions"><button class="btn ghost" data-act="edit-line" data-id="${l.id}">Edit</button><button class="btn ghost danger" data-act="delete-line" data-id="${l.id}">Delete</button></div></td>` : ""}
+      </tr>`; }).join("")}</tbody>
+      <tfoot><tr><td colspan="2">Total${unassigned ? ` <span class="asub">(includes ${peso(unassigned)} not tied to a line)</span>` : ""}</td><td class="num">${peso(b.alloc)}</td><td class="num">${peso(b.spentAll)}</td><td class="num">${peso(b.bal)}</td><td class="mono">${b.alloc?pct(b.rate):"—"}</td>${M?"<td></td>":""}</tr></tfoot>
+      </table></div>`
+    : `<div class="empty">No budget allocated yet. Add lines by expense class (Personal Services, MOOE, Capital Outlay) with the approved amount for each item.</div>`}
+  </section>
+  <section class="block">
+    <div class="bhead"><h3>Expenses</h3><span class="count">${ex.length}</span>
+      ${U ? `<div class="acts"><button class="btn primary" data-act="new-expense" ${lines.length?"":"disabled title=\"Add a budget line first\""}>+ Record expense</button></div>` : ""}</div>
+    ${ex.length ? `<div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Budget line</th><th>Particulars</th><th>Reference</th><th class="num">Amount</th><th>Recorded by</th>${U?"<th></th>":""}</tr></thead>
+      <tbody>${ex.map(e => { const l = lines.find(x => x.id === e.lineId); return `<tr>
+        <td class="mono">${fmt(e.date)}</td><td>${l ? esc(l.item) : `<span class="muted">—</span>`}</td><td>${esc(e.particulars)}</td><td class="mono">${esc(e.ref||"")}</td>
+        <td class="num">${peso(e.amount)}</td><td class="asub">${esc(nameOf(e.by))}</td>
+        ${U ? `<td><div class="row-actions">${(canManage(p) || e.by === state.me.id) ? `<button class="btn ghost" data-act="edit-expense" data-id="${e.id}">Edit</button><button class="btn ghost danger" data-act="delete-expense" data-id="${e.id}">Delete</button>` : ""}</div></td>` : ""}
+      </tr>`; }).join("")}</tbody></table></div>`
+    : `<div class="empty">No expenses recorded. Log each disbursement with its date, budget line and reference (DV, PR or OR number) so utilization stays current.</div>`}
+  </section>`;
+}
+
+function tabUpdates(p){
+  const accs = accsOf(p.id), U = canUpdate(p);
+  return `<section class="block">
+    <div class="bhead"><h3>Status updates</h3><span class="count">What was done, when, and the progress it moved</span>
+      ${U ? `<div class="acts"><button class="btn primary" data-act="new-acc">+ Post update</button></div>` : ""}</div>
+    ${accs.length ? `<ul class="log">${accs.map(c => {
+      const a = state.activities.find(x => x.id === c.activityId);
+      const mine = canManage(p) || (c.by && c.by === state.me.id) || (!c.by && U);
+      return `<li>
+        <div class="d mono">${fmt(c.date)}</div>
+        <div class="t">${a ? `<span class="tag">${esc(a.name)}</span><br>` : ""}${esc(c.text)}
+          ${c.progress != null && c.progress !== "" ? `<div class="pg">Progress set to <span class="mono">${c.progress}%</span></div>` : ""}
+          ${c.projectStatus ? `<div class="pg">Project status: ${esc(PSTAT[c.projectStatus]||c.projectStatus)}</div>` : ""}
+          ${c.by ? `<div class="pg">Posted by ${esc(nameOf(c.by))}</div>` : ""}</div>
+        ${U && mine ? `<div class="row-actions"><button class="btn ghost" data-act="edit-acc" data-id="${c.id}">Edit</button><button class="btn ghost danger" data-act="delete-acc" data-id="${c.id}">Delete</button></div>` : "<span></span>"}
+      </li>`; }).join("")}</ul>`
+    : `<div class="empty">No updates yet. Post what was accomplished, link it to a sub-activity, and set the project's current status.</div>`}
+  </section>`;
+}
+
+function tabTeam(p){
+  const M = canManage(p);
+  const reqs = state.joinRequests.filter(r => r.projectId === p.id && r.status === "pending");
+  const mem = p.memberIds || [];
+  const person = id => { const m = memberDoc(id); return `<div class="grow"><div class="aname">${esc(nameOf(id))}</div><div class="asub">${esc([m&&m.position, m&&m.office].filter(Boolean).join(" · ") || "")}</div></div>`; };
+  return `<div class="two">
+    <section class="block">
+      <div class="bhead"><h3>Team</h3><span class="count">${mem.length + (p.leaderId?1:0)}</span>
+        ${M ? `<div class="acts"><button class="btn" data-act="add-member">+ Add member</button></div>` : ""}</div>
+      <ul class="mini">
+        <li>${p.leaderId ? person(p.leaderId) : `<div class="grow"><div class="aname">${esc(p.lead || "No leader assigned")}</div><div class="asub">${state.isAdmin ? "Assign a registered user as leader with Edit." : ""}</div></div>`}<span class="tagline">Leader</span></li>
+        ${mem.map(id => `<li>${person(id)}<span class="tagline">Member</span>${M ? `<button class="btn ghost danger sm" data-act="remove-member" data-id="${id}">Remove</button>` : ""}</li>`).join("")}
+      </ul>
+      ${!mem.length ? `<div class="hint">No members yet. Users who browse all projects can ask to join; the leader approves them here.</div>` : ""}
+    </section>
+    <section class="block">
+      <div class="bhead"><h3>Join requests</h3><span class="count">${reqs.length}</span></div>
+      ${reqs.length ? `<ul class="mini">${reqs.map(r => `<li>${person(r.uid)}
+        ${r.note ? `<div class="asub" style="flex-basis:100%" data-text="${esc(r.note)}"></div>` : ""}
+        ${M ? `<button class="btn primary sm" data-act="approve" data-id="${r.id}">Approve</button><button class="btn sm" data-act="decline" data-id="${r.id}">Decline</button>` : `<span class="asub">Awaiting leader</span>`}</li>`).join("")}</ul>`
+      : `<div class="empty">No pending requests.</div>`}
+    </section>
+  </div>`;
+}
+
+function threadHtml(t, showProject){
+  const posts = postsOf(t.id), open = state.openThread === t.id;
+  const p = state.projects.find(x => x.id === t.projectId);
+  const attn = threadAttn(t);
+  const canReply = state.canWrite && !t.closed && (state.isAdmin || (p && involved(p)));
+  const canClose = state.canWrite && (state.isAdmin || t.createdBy === state.me.id);
+  const kindL = {query:"Query", message:"Message", concern:"Concern"}[t.kind] || "Message";
+  return `<div class="thread ${attn?"attn":""}">
+    <button class="th-head" data-act="toggle-thread" data-id="${t.id}" aria-expanded="${open}">
+      <span class="kind k-${t.kind||"message"}">${kindL}</span>
+      <span class="subj">${esc(t.subject)}${showProject && p ? `<div class="asub">${esc(p.title)}</div>` : ""}</span>
+      ${t.closed ? `<span class="closed">Resolved</span>` : t.awaiting === "user" ? `<span class="awaiting">Awaiting project team</span>` : t.awaiting === "admin" ? `<span class="awaiting">Awaiting admin</span>` : ""}
+      <span class="when mono">${esc(fmtTs(t.lastAt))} · ${posts.length}</span>
+    </button>
+    ${open ? `<div class="posts">${posts.map(x => `<div class="post"><div class="who-s">${esc(x.asAdmin ? (memberDoc(x.from) ? nameOf(x.from) : "Administrator") : nameOf(x.from))}${x.asAdmin ? `<span class="r">Admin</span>` : ""}</div><div class="tm mono">${esc(fmtTs(x.at))}</div><div class="tx" data-text="${esc(x.text)}"></div></div>`).join("")}
+      <div class="th-actions">
+        ${canReply ? `<button class="btn primary sm" data-act="reply" data-id="${t.id}">Reply</button>` : ""}
+        ${showProject && p ? `<button class="btn sm" data-act="goto-project" data-id="${p.id}">Open project</button>` : ""}
+        ${canClose ? (t.closed ? `<button class="btn sm" data-act="reopen" data-id="${t.id}">Reopen</button>` : `<button class="btn sm" data-act="close-thread" data-id="${t.id}">Mark resolved</button>`) : ""}
+      </div></div>` : ""}
+  </div>`;
+}
+
+function tabMessages(p){
+  const ts = threadsOf(p.id);
+  const canStartUser = state.canWrite && involved(p) && !state.isAdmin;
+  return `<section class="block">
+    <div class="bhead"><h3>Messages with the administrator</h3><span class="count">${ts.length}</span>
+      <div class="acts">
+        ${state.isAdmin && state.canWrite ? `<button class="btn" data-act="new-thread" data-k="message">+ Message</button><button class="btn primary" data-act="new-thread" data-k="query">+ Query</button>` : ""}
+        ${canStartUser ? `<button class="btn primary" data-act="new-thread" data-k="concern">+ Ask the admin</button>` : ""}
+      </div></div>
+    ${ts.length ? `<div class="threads">${ts.map(t => threadHtml(t,false)).join("")}</div>`
+      : `<div class="empty">${state.isAdmin ? "No messages yet. Send a query when you need the project team to explain a delay, a budget variance or a missing report; they'll see it flagged until they reply." : "No messages yet. Queries from the administrator about this project appear here, and you can raise a concern with them."}</div>`}
+  </section>`;
+}
+
+/* ----- Messages view ----- */
+function renderMessages(){
+  const all = visibleThreads().sort((a,b) => (b.lastAt||0)-(a.lastAt||0));
+  const f = state.msgFilter;
+  const list = all.filter(t => f === "all" ? true : f === "open" ? !t.closed : threadAttn(t));
+  const n = all.filter(threadAttn).length;
+  $("#messagesInner").innerHTML = `
+    <div class="rephead"><div><div class="eyebrow">${state.isAdmin ? "All projects" : "Your projects"}</div><h2>Messages and queries</h2></div>
+      <div class="seg" role="group" aria-label="Show">${[["attn",state.isAdmin?"Awaiting me":"Needs my reply"],["open","Open"],["all","All"]].map(([k,l]) => `<button data-act="msgfilter" data-k="${k}" aria-pressed="${f===k}">${l}${k==="attn"?` (${n})`:""}</button>`).join("")}</div></div>
+    ${list.length ? `<div class="threads">${list.map(t => threadHtml(t,true)).join("")}</div>`
+      : `<div class="empty">${f === "attn" ? "Nothing is waiting on you." : "No messages yet."} ${state.isAdmin ? "Open a project and use “+ Query” to ask its team about a concern." : "Queries from the administrator about your projects will appear here."}</div>`}`;
+  $("#messagesInner").querySelectorAll("[data-text]").forEach(n => { n.textContent = n.dataset.text; });
+}
+
+/* ----- Reports ----- */
+function periodRange(){
+  const y = state.rep.year, p = state.rep.period;
+  if (p === "annual") return [y+"-01-01", y+"-12-31", "Annual " + y];
+  const q = QUARTERS.find(x => x[0] === p);
+  return [y+"-"+q[1], y+"-"+q[2], q[0] + " " + y];
+}
+function reportRows(){
+  const [from, to] = periodRange();
+  const qi = state.rep.period === "annual" ? [0,1,2,3] : [Number(state.rep.period[1])-1];
+  const projs = state.projects.filter(p => (state.rep.scope === "all" || involved(p)))
+    .filter(p => state.rep.cat === "all" || (p.category||"none") === state.rep.cat)
+    .filter(p => (!p.start || p.start <= to) && (!p.end || p.end >= from));
+  return projs.map(p => {
+    const ts = targetsOf(p.id).filter(t => Number(t.year) === Number(state.rep.year));
+    const tRows = ts.map(t => {
+      const T = qi.reduce((s,i)=>s+num((t.q||[])[i]),0), A = qi.reduce((s,i)=>s+num((t.a||[])[i]),0);
+      return {indicator:t.indicator, unit:t.unit||"", T, A, rate: T ? A/T*100 : null};
+    });
+    const rated = tRows.filter(r => r.rate != null);
+    const rate = rated.length ? rated.reduce((s,r)=>s+Math.min(r.rate,100),0)/rated.length : null;
+    const b = budgetOf(p.id, from, to);
+    const latest = accsOf(p.id).find(a => a.date >= from && a.date <= to);
+    return {p, tRows, rate, b, latest, health: projStatus(p), progress: projProgress(p)};
+  });
+}
+function renderReports(){
+  const R = state.rep;
+  const [from, to, label] = periodRange();
+  const rows = reportRows();
+  const years = new Set([THIS_YEAR]);
+  state.projects.forEach(p => { if (p.start) years.add(Number(p.start.slice(0,4))); if (p.end) years.add(Number(p.end.slice(0,4))); });
+  state.targets.forEach(t => years.add(Number(t.year)));
+  const ys = [...years].filter(Boolean).sort((a,b)=>b-a);
+  const cats = [...CATS.map(c=>c.k),"none"].filter(k => R.cat === "all" || R.cat === k);
+  const grp = k => rows.filter(r => (catOf(r.p.category) ? r.p.category : "none") === k);
+  const sumRow = list => {
+    const rated = list.filter(r => r.rate != null);
+    return {n:list.length, rate: rated.length ? rated.reduce((s,r)=>s+r.rate,0)/rated.length : null,
+      alloc:list.reduce((s,r)=>s+r.b.alloc,0), spent:list.reduce((s,r)=>s+r.b.spent,0),
+      done:list.filter(r => r.progress>=100).length, late:list.filter(r => r.health==="late"||r.health==="behind").length};
+  };
+  const tot = sumRow(rows);
+  $("#reportsInner").innerHTML = `
+    <div class="print-only printhead">${logoHtml()}<div><b>Technological University of the Philippines</b><span class="asub">Accomplishment report generated ${esc(fmt(TODAY))}</span></div></div>
+    <div class="rephead">
+      <div><div class="eyebrow">Accomplishment report · ${esc(fmt(from))} – ${esc(fmt(to))}</div><h2>${esc(label)} accomplishments</h2></div>
+      <div class="acts" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" data-act="copy-report">Copy table</button>
+        <button class="btn" data-act="print">Print / save as PDF</button>
+        <button class="btn primary" data-act="csv">Download CSV</button>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="field"><label for="repYear">Year</label><select id="repYear" class="sel">${ys.map(y => `<option ${y===Number(R.year)?"selected":""}>${y}</option>`).join("")}</select></div>
+      <div class="field" style="min-width:0"><span class="flabel">Period</span><div class="seg">${["annual","Q1","Q2","Q3","Q4"].map(k => `<button data-act="period" data-k="${k}" aria-pressed="${R.period===k}">${k==="annual"?"Annual":k}</button>`).join("")}</div></div>
+      <div class="field"><label for="repCat">Category</label><select id="repCat" class="sel"><option value="all">All categories</option>${CATS.map(c => `<option value="${c.k}" ${R.cat===c.k?"selected":""}>${c.label}</option>`).join("")}<option value="none" ${R.cat==="none"?"selected":""}>Uncategorized</option></select></div>
+      ${state.me.id && !state.isAdmin ? `<div class="field"><label for="repScope">Projects</label><select id="repScope" class="sel"><option value="mine" ${R.scope==="mine"?"selected":""}>My projects</option><option value="all" ${R.scope==="all"?"selected":""}>All projects</option></select></div>` : ""}
+    </div>
+
+    <section class="block">
+      <div class="bhead"><h3>Summary by category</h3></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Category</th><th class="num">Projects</th><th class="num">Completed</th><th class="num">Behind / overdue</th><th class="num">Accomplishment rate</th><th class="num">Allocated</th><th class="num">Utilized in period</th></tr></thead>
+        <tbody>${cats.map(k => { const s = sumRow(grp(k)); const c = catOf(k); if (k==="none" && !s.n) return ""; return `<tr>
+          <td><span class="${c?"c-"+k:"c-none"}" style="background:none"><span class="cdot"></span></span>${c?c.label:"Uncategorized"}</td>
+          <td class="num">${s.n}</td><td class="num">${s.done}</td><td class="num">${s.late}</td>
+          <td class="num"><span class="rate ${s.rate!=null?rateClass(s.rate):""}">${s.rate!=null?pct(s.rate):"—"}</span></td>
+          <td class="num">${peso(s.alloc)}</td><td class="num">${peso(s.spent)}</td></tr>`; }).join("")}</tbody>
+        <tfoot><tr><td>Total</td><td class="num">${tot.n}</td><td class="num">${tot.done}</td><td class="num">${tot.late}</td><td class="num">${tot.rate!=null?pct(tot.rate):"—"}</td><td class="num">${peso(tot.alloc)}</td><td class="num">${peso(tot.spent)}</td></tr></tfoot>
+      </table></div>
+      <div class="hint">Accomplishment rate = actual ÷ target for each indicator in the period, capped at 100% per indicator, averaged per project and then per category. Projects count when their dates overlap the period.</div>
+    </section>
+
+    <section class="block">
+      <div class="bhead"><h3>Detailed accomplishments</h3><span class="count">${rows.length} project${rows.length===1?"":"s"}</span></div>
+      ${rows.length ? `<div class="table-wrap"><table id="repTable">
+        <thead><tr><th>Project / leader</th><th>Success indicator</th><th class="num">Target</th><th class="num">Actual</th><th class="num">Rate</th><th class="num">Allocated</th><th class="num">Utilized</th><th>Status</th><th>Latest update in period</th></tr></thead>
+        <tbody>${cats.map(k => { const list = grp(k); if (!list.length) return ""; const c = catOf(k);
+          return `<tr><td class="grp" colspan="9">${c?c.label:"Uncategorized"}</td></tr>` + list.map(r => {
+            const n = Math.max(1, r.tRows.length);
+            const first = r.tRows[0];
+            const tcells = t => t ? `<td>${esc(t.indicator)}${t.unit?` <span class="asub">(${esc(t.unit)})</span>`:""}</td><td class="num">${t.T}</td><td class="num">${t.A}</td><td class="num"><span class="rate ${t.rate!=null?rateClass(t.rate):""}">${t.rate!=null?pct(t.rate):"—"}</span></td>` : `<td class="muted">No targets for ${esc(R.year)}</td><td class="num">—</td><td class="num">—</td><td class="num">—</td>`;
+            return `<tr><td rowspan="${n}"><div class="aname"><button class="linkish" data-act="goto-project" data-id="${r.p.id}">${esc(r.p.title)}</button></div><div class="asub">${esc(leaderLabel(r.p))}${r.p.unit?" · "+esc(r.p.unit):""}</div></td>
+              ${tcells(first)}
+              <td class="num" rowspan="${n}">${peso(r.b.alloc)}</td><td class="num" rowspan="${n}">${peso(r.b.spent)}</td>
+              <td rowspan="${n}">${pill(r.health)}<div class="asub mono">${r.progress}% done</div></td>
+              <td rowspan="${n}" class="asub" style="max-width:260px">${r.latest ? esc(r.latest.text.slice(0,160)) + (r.latest.text.length>160?"…":"") : "—"}</td></tr>` +
+              r.tRows.slice(1).map(t => `<tr>${tcells(t)}</tr>`).join("");
+          }).join(""); }).join("")}</tbody></table></div>`
+      : `<div class="empty">No projects fall in ${esc(label)}${R.cat!=="all"?" for this category":""}. Pick another year or period, or check that projects have dates and targets for ${esc(R.year)}.</div>`}
+    </section>`;
+}
+function reportMatrix(){
+  const [from, to, label] = periodRange();
+  const head = ["Category","Project","Office/Unit","Leader","Success indicator","Unit","Target","Actual","Rate %","Allocated (PHP)","Utilized in period (PHP)","Schedule status","Progress %","Reported status","Latest update"];
+  const out = [head];
+  reportRows().sort((a,b) => CATS.findIndex(c=>c.k===a.p.category) - CATS.findIndex(c=>c.k===b.p.category)).forEach(r => {
+    const base = [catOf(r.p.category)?.label || "Uncategorized", r.p.title, r.p.unit||"", leaderLabel(r.p)];
+    const tail = [r.b.alloc.toFixed(2), r.b.spent.toFixed(2), STATUS[r.health].label, r.progress, PSTAT[r.p.status]||"", r.latest ? r.latest.text : ""];
+    if (!r.tRows.length) out.push([...base, "", "", "", "", "", ...tail]);
+    r.tRows.forEach(t => out.push([...base, t.indicator, t.unit, t.T, t.A, t.rate!=null?Math.round(t.rate):"", ...tail]));
+  });
+  return {out, label};
+}
+
+/* ----- Admin ----- */
+function renderAdmin(){
+  const P = state.projects;
+  const catStats = CATS.map(c => {
+    const list = P.filter(p => p.category === c.k);
+    const alloc = list.reduce((s,p)=>s+budgetOf(p.id).alloc,0), spent = list.reduce((s,p)=>s+budgetOf(p.id).spentAll,0);
+    return {c, n:list.length, avg: list.length ? Math.round(list.reduce((s,p)=>s+projProgress(p),0)/list.length) : 0,
+      risk: list.filter(p => ["late","behind"].includes(projStatus(p))).length, alloc, spent};
+  });
+  const uncats = P.filter(p => !catOf(p.category));
+  const risky = P.filter(p => ["late","behind"].includes(projStatus(p))).sort((a,b) => (a.end||"").localeCompare(b.end||""));
+  const awaiting = state.threads.filter(t => !t.closed && t.awaiting === "admin");
+  const recentRevs = [...state.revisions].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,6);
+  const silent = P.filter(p => projProgress(p) < 100 && p.start && p.start <= TODAY).filter(p => { const a = accsOf(p.id)[0]; return !a || days(a.date, TODAY) > 30; });
+  const members = [...state.members].sort((a,b) => (a.fullName||"").localeCompare(b.fullName||""));
+  const pTitle = id => (P.find(p=>p.id===id)||{}).title || "Deleted project";
+  $("#adminInner").innerHTML = `
+    <div class="rephead"><div><div class="eyebrow">Administrator</div><h2>Monitoring</h2></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn" href="/api/admin/backup" download title="Every project, update, budget record and account, as a JSON file">Download backup</a><button class="btn" data-act="nav" data-k="reports">Open reports</button><button class="btn primary" data-act="new-ann">+ Announcement</button></div></div>
+    <div class="cats">${catStats.map(s => `<div class="catcard c-${s.c.k}" style="background:var(--surface)">
+      <div class="cn">${s.c.label}</div><div class="big mono">${s.n}</div>
+      <dl><dt>Avg. progress</dt><dd>${s.n?s.avg+"%":"—"}</dd><dt>Behind / overdue</dt><dd style="${s.risk?"color:var(--bad)":""}">${s.risk}</dd>
+      <dt>Allocated</dt><dd>${peso(s.alloc)}</dd><dt>Utilized</dt><dd>${s.alloc?pct(s.spent/s.alloc*100):"—"}</dd></dl></div>`).join("")}</div>
+    ${uncats.length ? `<div class="notice" style="border:1px solid var(--line);border-radius:var(--r)"><span><b>${uncats.length} project${uncats.length===1?"":"s"} without a category.</b> Open each and use Edit to assign one of the five categories so it appears in reports.</span><button class="btn sm" data-act="show-uncat">Show them</button></div>` : ""}
+    <div class="two">
+      <section class="block"><div class="bhead"><h3>Behind or overdue</h3><span class="count">${risky.length}</span></div>
+        ${risky.length ? `<ul class="mini">${risky.slice(0,8).map(p => `<li><div class="grow"><button class="linkish" data-act="goto-project" data-id="${p.id}">${esc(p.title)}</button><div class="asub">${esc(leaderLabel(p))} · ends ${fmt(p.end)} · ${projProgress(p)}%</div></div>${pill(projStatus(p))}</li>`).join("")}</ul>` : `<div class="empty">Every active project is on schedule.</div>`}
+      </section>
+      <section class="block"><div class="bhead"><h3>Replies awaiting you</h3><span class="count">${awaiting.length}</span></div>
+        ${awaiting.length ? `<ul class="mini">${awaiting.slice(0,8).map(t => `<li><div class="grow"><button class="linkish" data-act="goto-thread" data-id="${t.id}">${esc(t.subject)}</button><div class="asub">${esc(pTitle(t.projectId))} · ${esc(fmtTs(t.lastAt))}</div></div></li>`).join("")}</ul>` : `<div class="empty">No replies or concerns are waiting on you.</div>`}
+      </section>
+      <section class="block"><div class="bhead"><h3>No update in 30+ days</h3><span class="count">${silent.length}</span></div>
+        ${silent.length ? `<ul class="mini">${silent.slice(0,8).map(p => { const a = accsOf(p.id)[0]; return `<li><div class="grow"><button class="linkish" data-act="goto-project" data-id="${p.id}">${esc(p.title)}</button><div class="asub">${a ? "Last update " + fmt(a.date) : "No updates posted"} · ${esc(leaderLabel(p))}</div></div><button class="btn sm" data-act="quick-query" data-id="${p.id}">Send query</button></li>`; }).join("")}</ul>` : `<div class="empty">All started projects have a recent update.</div>`}
+      </section>
+      <section class="block"><div class="bhead"><h3>Recent timeline changes</h3><span class="count">${state.revisions.length}</span></div>
+        ${recentRevs.length ? `<ul class="mini">${recentRevs.map(r => `<li><div class="grow"><button class="linkish" data-act="goto-project" data-id="${r.projectId}">${esc(pTitle(r.projectId))}</button><div class="asub">${r.kind==="catchup"?"Catch-up added":"Revised"} to ${fmt(r.newStart)} – ${fmt(r.newEnd)} · <span data-text="${esc(r.reason)}"></span></div></div></li>`).join("")}</ul>` : `<div class="empty">No dates have been revised.</div>`}
+      </section>
+    </div>
+    <section class="block"><div class="bhead"><h3>Registered users</h3><span class="count">${members.length}</span></div>
+      ${members.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Email</th><th>Office / unit</th><th>Position</th><th class="num">Leads</th><th class="num">Member of</th><th>Registered</th><th>Role</th><th>Access</th><th></th></tr></thead>
+        <tbody>${members.map(m => `<tr><td class="aname">${esc(m.fullName||"—")}</td><td class="asub">${esc(m.email||"")}</td><td>${esc(m.office||"")}</td><td>${esc(m.position||"")}</td>
+          <td class="num">${P.filter(p=>p.leaderId===m.id).length}</td><td class="num">${P.filter(p=>(p.memberIds||[]).includes(m.id)).length}</td>
+          <td class="mono asub">${m.registeredAt?esc(fmtTs(m.registeredAt).slice(0,-6)):""}</td>
+          <td>${m.role==="admin"?`<span class="tagline">Administrator</span>`:`<span class="asub">User</span>`}</td>
+          <td>${m.active===false?`<span class="pill s-late">Deactivated</span>`:`<span class="pill s-done">Active</span>`}</td>
+          <td><div class="row-actions">${m.id===state.me.id?`<span class="asub">You</span>`:`
+            <button class="btn ghost" data-act="toggle-role" data-id="${m.id}">${m.role==="admin"?"Make user":"Make admin"}</button>
+            <button class="btn ghost" data-act="reset-pw" data-id="${m.id}">Reset password</button>
+            <button class="btn ghost ${m.active===false?"":"danger"}" data-act="toggle-member" data-id="${m.id}">${m.active===false?"Reactivate":"Deactivate"}</button>`}</div></td></tr>`).join("")}</tbody></table></div>`
+      : `<div class="empty">No one else has registered yet. Give faculty and staff this tracker's address so they can register. You can make any of them an administrator from this table.</div>`}
+    </section>
+    <section class="block"><div class="bhead"><h3>Announcements</h3><span class="count">${state.announcements.length}</span></div>
+      ${state.announcements.length ? `<ul class="log">${state.announcements.map(a => `<li><div class="d mono">${esc(fmtTs(a.createdAt))}</div><div class="t" data-text="${esc(a.text)}"></div><div class="row-actions"><button class="btn ghost danger" data-act="delete-ann" data-id="${a.id}">Delete</button></div></li>`).join("")}</ul>`
+      : `<div class="empty">Post deadlines and reminders for all users, such as “Q4 accomplishment reports are due December 15.” The latest one shows as a banner for every user.</div>`}
+    </section>`;
+  $("#adminInner").querySelectorAll("[data-text]").forEach(n => { n.textContent = n.dataset.text; });
+}
+
+/* ---------- modals ---------- */
+function modal(title, body, onSubmit, submitLabel){
+  const root = $("#modalRoot");
+  root.innerHTML = `<div class="overlay" data-act="close-overlay"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <header><h3 id="mTitle">${title}</h3></header>
+    <form id="mForm" novalidate>${body}<div class="err" id="mErr" hidden></div>
+    <div class="form-actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary" id="mSubmit">${submitLabel||"Save"}</button></div></form>
+  </div></div>`;
+  const form = $("#mForm");
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const fd = {};
+    new FormData(form).forEach((v,k) => { fd[k] = v; });
+    form.querySelectorAll("input[type=checkbox]").forEach(c => { fd[c.name] = c.checked; });
+    const err = onSubmit.validate ? onSubmit.validate(fd) : null;
+    if (err) { $("#mErr").textContent = err; $("#mErr").hidden = false; return; }
+    $("#mSubmit").disabled = true;
+    const ok = await onSubmit(fd);
+    if (ok !== false) closeModal(); else $("#mSubmit").disabled = false;
+  });
+  const firstInput = form.querySelector("input:not([type=hidden]),select,textarea"); if (firstInput) firstInput.focus();
+}
+function closeModal(){ $("#modalRoot").innerHTML = ""; }
+const dateErr = (s,e) => !s || !e ? "Enter both a start date and an end date." : (e < s ? "The end date can't be before the start date." : null);
+const curProject = () => state.projects.find(x => x.id === state.selected);
+const memberOptions = (sel, exclude=[]) => state.members.filter(m => m.active !== false && !exclude.includes(m.id)).sort((a,b)=>(a.fullName||"").localeCompare(b.fullName||"")).map(m => `<option value="${m.id}" ${sel===m.id?"selected":""}>${esc(m.fullName)}${m.office?" — "+esc(m.office):""}</option>`).join("");
+
+function openProject(p){
+  p = p || {};
+  const isNew = !p.id;
+  const fn = async fd => {
+    const data = {title:fd.title.trim(), category:fd.category, unit:fd.unit.trim(), fundSource:fd.fundSource.trim(), start:fd.start, end:fd.end, description:fd.description.trim(), status:fd.status};
+    if (state.isAdmin && fd.leaderId !== undefined) {
+      data.leaderId = fd.leaderId || null;
+      if (data.leaderId) data.memberIds = (p.memberIds||[]).filter(x => x !== data.leaderId);
+    }
+    if (!isNew) {
+      if (p.start !== data.start || p.end !== data.end) { if (!p.baseStart) { data.baseStart = p.start; data.baseEnd = p.end; } }
+      return write(() => upd("projects", p.id, data), "Project updated");
+    }
+    Object.assign(data, {createdAt:Date.now(), createdBy:state.me.id, baseStart:data.start, baseEnd:data.end, memberIds:[]});
+    if (!state.isAdmin || !data.leaderId) data.leaderId = data.leaderId || (myDoc() ? state.me.id : null);
+    let newId;
+    const ok = await write(async () => { newId = await add("projects", data); }, "Project created");
+    if (ok) { state.selected = newId; state.tab = "overview"; render(); }
+    return ok;
+  };
+  fn.validate = fd => !fd.title.trim() ? "Give the project a title." : (!fd.category ? "Choose a category." : dateErr(fd.start, fd.end));
+  const leaderField = state.isAdmin ? `<div class="field"><label for="f-leader">Project leader</label><select id="f-leader" name="leaderId"><option value="">${isNew && myDoc() ? "Me" : "Not assigned"}</option>${memberOptions(p.leaderId)}</select>${p.lead && !p.leaderId ? `<span class="hint">Previously recorded as “${esc(p.lead)}”.</span>` : ""}</div>` : "";
+  modal(isNew ? "New project" : "Edit project", `
+    <div class="field"><label for="f-title">Project title</label><input id="f-title" name="title" value="${esc(p.title)}" placeholder="e.g. Faculty Research Colloquium 2026"></div>
+    <div class="row2">
+      <div class="field"><label for="f-cat">Category</label><select id="f-cat" name="category"><option value="">Choose…</option>${CATS.map(c => `<option value="${c.k}" ${p.category===c.k?"selected":""}>${c.label}</option>`).join("")}</select></div>
+      <div class="field"><label for="f-status">Implementation status</label><select id="f-status" name="status">${Object.entries(PSTAT).map(([k,l]) => `<option value="${k}" ${(p.status||"planning")===k?"selected":""}>${l}</option>`).join("")}</select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="f-unit">College / office</label><input id="f-unit" name="unit" value="${esc(p.unit ?? (isNew && myDoc() ? myDoc().office : ""))}" placeholder="e.g. College of Engineering"></div>
+      <div class="field"><label for="f-fund">Fund source</label><input id="f-fund" name="fundSource" value="${esc(p.fundSource)}" placeholder="e.g. GAA 2026, IGF, external grant"></div>
+    </div>
+    ${leaderField}
+    <div class="row2">
+      <div class="field"><label for="f-start">Start date</label><input id="f-start" type="date" name="start" value="${esc(p.start||TODAY)}"></div>
+      <div class="field"><label for="f-end">End date</label><input id="f-end" type="date" name="end" value="${esc(p.end)}"></div>
+    </div>
+    ${!isNew ? `<div class="hint">To move dates because of delays, use “Revise project dates” on the Overview tab so the reason is logged.</div>` : ""}
+    <div class="field"><label for="f-desc">Objectives / description</label><textarea id="f-desc" name="description" placeholder="What this project should achieve">${esc(p.description)}</textarea></div>`, fn, isNew ? "Create project" : "Save");
+}
+
+function openActivity(a, catchUp){
+  const p = curProject(); if (!p) return;
+  a = a || {};
+  const isNew = !a.id;
+  const fn = async fd => {
+    const data = {name:fd.name.trim(), assignee:fd.assignee.trim(), start:fd.start, end:fd.end, progress:Number(fd.progress)||0};
+    if (!isNew) return write(() => upd("activities", a.id, data), "Sub-activity updated");
+    Object.assign(data, {projectId:p.id, createdAt:Date.now(), baseStart:fd.start, baseEnd:fd.end, catchUp:!!catchUp});
+    let id;
+    const ok = await write(async () => { id = await add("activities", data); }, catchUp ? "Catch-up activity added" : "Sub-activity added");
+    if (ok && catchUp) await write(() => add("revisions", {projectId:p.id, activityId:id, kind:"catchup", newStart:fd.start, newEnd:fd.end, reason:fd.reason.trim(), by:state.me.id, at:Date.now()}));
+    return ok;
+  };
+  fn.validate = fd => !fd.name.trim() ? "Name the activity." : (catchUp && !fd.reason.trim() ? "Explain what this catch-up activity recovers." : dateErr(fd.start, fd.end));
+  const pr = Number(a.progress)||0;
+  modal(catchUp ? "Add catch-up activity" : isNew ? "Add sub-activity" : "Edit sub-activity", `
+    ${catchUp ? `<div class="hint">A catch-up activity recovers work that fell behind. It's marked on the schedule and logged under Timeline changes.</div>` : ""}
+    <div class="field"><label for="f-name">${catchUp ? "Catch-up activity" : "Sub-activity"}</label><input id="f-name" name="name" value="${esc(a.name)}" placeholder="${catchUp ? "e.g. Saturday make-up training sessions" : "e.g. Secure venue and equipment"}"></div>
+    <div class="field"><label for="f-assignee">Assigned to</label><input id="f-assignee" name="assignee" value="${esc(a.assignee)}" placeholder="Person or team"></div>
+    <div class="row2">
+      <div class="field"><label for="f-astart">Start date</label><input id="f-astart" type="date" name="start" value="${esc(a.start||(catchUp?TODAY:p.start))}"></div>
+      <div class="field"><label for="f-aend">End date</label><input id="f-aend" type="date" name="end" value="${esc(a.end||p.end)}"></div>
+    </div>
+    ${catchUp ? `<div class="field"><label for="f-reason">Reason / what it recovers</label><textarea id="f-reason" name="reason" placeholder="e.g. Recovers 3 sessions lost to typhoon class suspensions in August"></textarea></div>` : `<input type="hidden" name="reason" value="">`}
+    <div class="field"><label for="f-prog">Progress: <span class="mono" id="progOut">${pr}%</span></label>
+      <input id="f-prog" type="range" name="progress" min="0" max="100" step="5" value="${pr}" oninput="document.getElementById('progOut').textContent=this.value+'%'"></div>
+    ${!isNew ? `<div class="hint">To change dates after a delay, use “Revise dates” so the change and its reason are logged.</div>` : `<div class="hint">Project dates: ${fmt(p.start)} – ${fmt(p.end)}</div>`}`, fn);
+  if (!isNew) { ["f-astart","f-aend"].forEach(id => { const el = document.getElementById(id); if (el) el.readOnly = true; }); }
+}
+
+function openProgress(a){
+  const pr = Number(a.progress)||0;
+  const fn = fd => write(() => upd("activities", a.id, {progress:Number(fd.progress)||0}), "Progress updated");
+  modal("Update progress", `<div class="aname">${esc(a.name)}</div>
+    <div class="field"><label for="f-prog">Progress: <span class="mono" id="progOut">${pr}%</span></label>
+      <input id="f-prog" type="range" name="progress" min="0" max="100" step="5" value="${pr}" oninput="document.getElementById('progOut').textContent=this.value+'%'"></div>
+    <div class="hint">To describe what was done, use “Post update” instead; it also sets progress.</div>`, fn);
+}
+
+function openRevise(a){
+  const p = curProject(); if (!p) return;
+  const target = a || p;
+  const fn = async fd => {
+    const patch = {start:fd.start, end:fd.end};
+    if (!target.baseStart) { patch.baseStart = target.start; patch.baseEnd = target.end; }
+    const ok = await write(() => upd(a ? "activities" : "projects", target.id, patch), "Dates revised");
+    if (ok) await write(() => add("revisions", {projectId:p.id, activityId:a ? a.id : null, kind:"revise", oldStart:target.start||"", oldEnd:target.end||"", newStart:fd.start, newEnd:fd.end, reason:fd.reason.trim(), by:state.me.id, at:Date.now()}));
+    return ok;
+  };
+  fn.validate = fd => dateErr(fd.start, fd.end) || (fd.start === target.start && fd.end === target.end ? "Change at least one date." : (!fd.reason.trim() ? "Give the reason for the change; the admin sees it." : null));
+  modal(a ? "Revise sub-activity dates" : "Revise project dates", `
+    <div class="aname">${esc(a ? a.name : p.title)}</div>
+    <div class="hint">Current: ${fmt(target.start)} – ${fmt(target.end)}${target.baseStart && (target.baseStart!==target.start||target.baseEnd!==target.end) ? ` · Original: ${fmt(target.baseStart)} – ${fmt(target.baseEnd)}` : ""}</div>
+    <div class="row2">
+      <div class="field"><label for="f-rs">New start date</label><input id="f-rs" type="date" name="start" value="${esc(target.start)}"></div>
+      <div class="field"><label for="f-re">New end date</label><input id="f-re" type="date" name="end" value="${esc(target.end)}"></div>
+    </div>
+    <div class="field"><label for="f-rr">Reason for the change</label><textarea id="f-rr" name="reason" placeholder="e.g. Venue unavailable during midterm examinations; moved two weeks later"></textarea></div>
+    <div class="hint">The original dates stay on the schedule as a dashed line, and this change is logged for the administrator.</div>`, fn, "Revise dates");
+}
+
+function openAcc(c){
+  const p = curProject(); if (!p) return;
+  c = c || {};
+  const acts = actsOf(p.id);
+  const fn = async fd => {
+    const data = {date:fd.date, text:fd.text.trim(), activityId:fd.activityId || null,
+      progress: fd.activityId && fd.progress !== "" ? clamp(Number(fd.progress),0,100) : null, projectStatus: fd.projectStatus || null};
+    const ok = await write(() => c.id ? upd("accomplishments", c.id, data) : add("accomplishments", {...data, projectId:p.id, by:state.me.id, createdAt:Date.now()}), c.id ? "Update edited" : "Update posted");
+    if (ok && data.activityId && data.progress != null) await write(() => upd("activities", data.activityId, {progress:data.progress}));
+    if (ok && data.projectStatus && data.projectStatus !== p.status) await write(() => upd("projects", p.id, {status:data.projectStatus}));
+    return ok;
+  };
+  fn.validate = fd => !fd.date ? "Enter the date." : (!fd.text.trim() ? "Describe what was accomplished." : (fd.progress !== "" && (isNaN(Number(fd.progress)) || fd.progress < 0 || fd.progress > 100) ? "Progress must be between 0 and 100." : null));
+  modal(c.id ? "Edit status update" : "Post status update", `
+    <div class="row2">
+      <div class="field"><label for="f-cdate">Date</label><input id="f-cdate" type="date" name="date" value="${esc(c.date||TODAY)}"></div>
+      <div class="field"><label for="f-cact">Sub-activity</label><select id="f-cact" name="activityId">
+        <option value="">Whole project</option>
+        ${acts.map(a => `<option value="${a.id}" ${c.activityId===a.id?"selected":""}>${esc(a.name)}</option>`).join("")}
+      </select></div>
+    </div>
+    <div class="field"><label for="f-ctext">What was accomplished</label><textarea id="f-ctext" name="text" placeholder="e.g. Signed MOA with the venue; 120 participants registered">${esc(c.text)}</textarea></div>
+    <div class="row2">
+      <div class="field"><label for="f-cprog">Set sub-activity progress to (%)</label><input id="f-cprog" class="mono" type="number" name="progress" min="0" max="100" step="5" value="${c.progress ?? ""}" placeholder="Leave blank to keep"></div>
+      <div class="field"><label for="f-cps">Project status</label><select id="f-cps" name="projectStatus"><option value="">Keep “${esc(PSTAT[p.status]||"Planning")}”</option>${Object.entries(PSTAT).map(([k,l]) => `<option value="${k}" ${c.projectStatus===k?"selected":""}>${l}</option>`).join("")}</select></div>
+    </div>`, fn, c.id ? "Save" : "Post update");
+}
+
+function openTarget(t){
+  const p = curProject(); if (!p) return;
+  t = t || {};
+  const fn = fd => {
+    const data = {indicator:fd.indicator.trim(), unit:fd.unit.trim(), year:Number(fd.year), q:[0,1,2,3].map(i => num(fd["q"+i]))};
+    return t.id ? write(() => upd("targets", t.id, data), "Target updated") : write(() => add("targets", {...data, a:[0,0,0,0], projectId:p.id, createdAt:Date.now()}), "Target added");
+  };
+  fn.validate = fd => !fd.indicator.trim() ? "Name the success indicator." : (!(Number(fd.year) > 2000) ? "Enter the year." : ([0,1,2,3].some(i => Number(fd["q"+i]) < 0) ? "Targets can't be negative." : null));
+  const y = t.year || (p.start ? Number(p.start.slice(0,4)) : THIS_YEAR);
+  modal(t.id ? "Edit target" : "Add target", `
+    <div class="field"><label for="f-ind">Success indicator</label><input id="f-ind" name="indicator" value="${esc(t.indicator)}" placeholder="e.g. Number of faculty trained on outcomes-based teaching"></div>
+    <div class="row2">
+      <div class="field"><label for="f-unit2">Unit of measure</label><input id="f-unit2" name="unit" value="${esc(t.unit)}" placeholder="e.g. faculty, papers, hectares"></div>
+      <div class="field"><label for="f-year">Year</label><input id="f-year" class="mono" type="number" name="year" value="${esc(y)}" min="2000" max="2100"></div>
+    </div>
+    <span class="flabel">Quarterly targets</span>
+    <div class="row4">${QUARTERS.map((q,i) => `<div class="field"><label for="f-q${i}">${q[0]}</label><input id="f-q${i}" class="mono" type="number" min="0" step="any" name="q${i}" value="${num((t.q||[])[i])}"></div>`).join("")}</div>
+    <div class="hint">Enter 0 for quarters with no planned output. The annual target is the sum.</div>`, fn);
+}
+function openActuals(t){
+  const fn = fd => write(() => upd("targets", t.id, {a:[0,1,2,3].map(i => num(fd["a"+i]))}), "Actuals saved");
+  fn.validate = fd => [0,1,2,3].some(i => Number(fd["a"+i]) < 0) ? "Actuals can't be negative." : null;
+  modal("Enter actual accomplishments", `<div class="aname">${esc(t.indicator)}</div><div class="hint">${esc(t.year)} · ${esc(t.unit||"")}</div>
+    <div class="row4">${QUARTERS.map((q,i) => `<div class="field"><label for="f-a${i}">${q[0]} <span class="muted">(target ${num((t.q||[])[i])})</span></label><input id="f-a${i}" class="mono" type="number" min="0" step="any" name="a${i}" value="${num((t.a||[])[i])}"></div>`).join("")}</div>`, fn);
+}
+
+function openLine(l){
+  const p = curProject(); if (!p) return;
+  l = l || {};
+  const fn = fd => { const data = {cls:fd.cls, item:fd.item.trim(), allocated:num(fd.allocated)};
+    return l.id ? write(() => upd("budgetLines", l.id, data), "Budget line updated") : write(() => add("budgetLines", {...data, projectId:p.id, createdAt:Date.now()}), "Budget line added"); };
+  fn.validate = fd => !fd.item.trim() ? "Describe the item." : (!(Number(fd.allocated) >= 0) || fd.allocated === "" ? "Enter the allocated amount." : null);
+  modal(l.id ? "Edit budget line" : "Add budget line", `
+    <div class="field"><label for="f-cls">Expense class</label><select id="f-cls" name="cls">${Object.entries(ECLASS).map(([k,v]) => `<option value="${k}" ${(l.cls||"MOOE")===k?"selected":""}>${k} — ${v}</option>`).join("")}</select></div>
+    <div class="field"><label for="f-item">Item / particulars</label><input id="f-item" name="item" value="${esc(l.item)}" placeholder="e.g. Meals and snacks for participants"></div>
+    <div class="field"><label for="f-alloc">Allocated amount (₱)</label><input id="f-alloc" class="mono" type="number" min="0" step="0.01" name="allocated" value="${l.allocated ?? ""}"></div>`, fn);
+}
+function openExpense(e){
+  const p = curProject(); if (!p) return;
+  e = e || {};
+  const lines = linesOf(p.id);
+  const fn = fd => { const data = {date:fd.date, lineId:fd.lineId, particulars:fd.particulars.trim(), ref:fd.ref.trim(), amount:num(fd.amount)};
+    return e.id ? write(() => upd("expenses", e.id, data), "Expense updated") : write(() => add("expenses", {...data, projectId:p.id, by:state.me.id, createdAt:Date.now()}), "Expense recorded"); };
+  fn.validate = fd => !fd.date ? "Enter the date." : (!fd.particulars.trim() ? "Describe the expense." : (!(Number(fd.amount) > 0) ? "Enter an amount above zero." : null));
+  modal(e.id ? "Edit expense" : "Record expense", `
+    <div class="row2">
+      <div class="field"><label for="f-edate">Date</label><input id="f-edate" type="date" name="date" value="${esc(e.date||TODAY)}"></div>
+      <div class="field"><label for="f-eline">Budget line</label><select id="f-eline" name="lineId">${lines.map(l => `<option value="${l.id}" ${e.lineId===l.id?"selected":""}>${esc(l.cls)} · ${esc(l.item)}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label for="f-epart">Particulars</label><input id="f-epart" name="particulars" value="${esc(e.particulars)}" placeholder="e.g. Snacks for Day 1, 120 pax"></div>
+    <div class="row2">
+      <div class="field"><label for="f-eamt">Amount (₱)</label><input id="f-eamt" class="mono" type="number" min="0" step="0.01" name="amount" value="${e.amount ?? ""}"></div>
+      <div class="field"><label for="f-eref">Reference no.</label><input id="f-eref" class="mono" name="ref" value="${esc(e.ref)}" placeholder="DV / PR / OR number"></div>
+    </div>`, fn);
+}
+
+function openThread(kind, projectId){
+  const p = state.projects.find(x => x.id === (projectId || state.selected)); if (!p) return;
+  const labels = {query:"Send a query", message:"Send a message", concern:"Ask the administrator"};
+  const fn = async fd => {
+    const at = Date.now();
+    const awaiting = kind === "query" ? "user" : kind === "concern" ? "admin" : null;
+    let tid;
+    const ok = await write(async () => { tid = await add("threads", {projectId:p.id, subject:fd.subject.trim(), kind, createdBy:state.me.id, byAdmin:state.isAdmin, createdAt:at, lastAt:at, awaiting, closed:false}); }, kind === "query" ? "Query sent" : "Message sent");
+    if (ok) { await write(() => add("posts", {threadId:tid, projectId:p.id, from:state.me.id, asAdmin:state.isAdmin, text:fd.text.trim(), at})); state.openThread = tid; render(); }
+    return ok;
+  };
+  fn.validate = fd => !fd.subject.trim() ? "Add a subject." : (!fd.text.trim() ? "Write the message." : null);
+  const ph = {query:"e.g. Explain the 40% shortfall in Q3 trainees", message:"e.g. Reminder: submit Q4 photos and attendance", concern:"e.g. Request for budget realignment"}[kind];
+  modal(labels[kind], `<div class="hint">${esc(p.title)}${kind==="query" ? " · The project team sees this flagged until they reply." : ""}</div>
+    <div class="field"><label for="f-subj">Subject</label><input id="f-subj" name="subject" placeholder="${ph}"></div>
+    <div class="field"><label for="f-msg">Message</label><textarea id="f-msg" name="text"></textarea></div>`, fn, "Send");
+}
+function openReply(t){
+  const fn = async fd => {
+    const at = Date.now();
+    const ok = await write(() => add("posts", {threadId:t.id, projectId:t.projectId, from:state.me.id, asAdmin:state.isAdmin, text:fd.text.trim(), at}), "Reply sent");
+    if (ok) { await write(() => upd("threads", t.id, {lastAt:at, awaiting: state.isAdmin ? "user" : "admin"})); if (state.msgFilter === "attn") state.msgFilter = "open"; render(); }
+    return ok;
+  };
+  fn.validate = fd => !fd.text.trim() ? "Write your reply." : null;
+  modal("Reply", `<div class="aname">${esc(t.subject)}</div><div class="field"><label for="f-rep">Your reply</label><textarea id="f-rep" name="text"></textarea></div>`, fn, "Send reply");
+}
+
+function confirmBox(title, msg, label, run){
+  $("#modalRoot").innerHTML = `<div class="overlay" data-act="close-overlay"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="mTitle">
+    <header><h3 id="mTitle">${title}</h3></header>
+    <form id="mForm"><p style="margin:0">${msg}</p><div class="form-actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary" id="mSubmit" style="background:var(--bad);border-color:var(--bad);color:#fff">${label||"Delete"}</button></div></form></div></div>`;
+  $("#mForm").addEventListener("submit", async ev => { ev.preventDefault(); $("#mSubmit").disabled = true; await run(); closeModal(); });
+  $("#mSubmit").focus();
+}
+
+/* ---------- report export ---------- */
+async function downloadCsv(){
+  const {out, label} = reportMatrix();
+  const csv = "﻿" + out.map(r => r.map(v => { const s = String(v ?? ""); return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s; }).join(",")).join("\r\n");
+  const url = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
+  const a = document.createElement("a");
+  a.href = url; a.download = "Accomplishment report " + label + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast("Report downloaded");
+}
+async function copyReport(){
+  const {out} = reportMatrix();
+  const tsv = out.map(r => r.map(v => String(v ?? "").replace(/[\t\n]+/g," ")).join("\t")).join("\n");
+  try { await navigator.clipboard.writeText(tsv); toast("Copied. Paste into Excel or Word."); }
+  catch(e){
+    $("#modalRoot").innerHTML = `<div class="overlay" data-act="close-overlay"><div class="modal"><header><h3>Copy the report</h3></header><form id="mForm"><p class="hint" style="margin:0">Select all the text below, copy it, and paste into Excel.</p><div class="field"><textarea id="f-copy" readonly style="min-height:240px" class="mono"></textarea></div><div class="form-actions"><button type="button" class="btn" data-act="close">Close</button></div></form></div></div>`;
+    const ta = $("#f-copy"); ta.value = tsv; ta.focus(); ta.select();
+  }
+}
+
+/* ---------- events ---------- */
+function go(view){ state.view = view; render(); window.scrollTo(0,0); }
+function gotoProject(id, tab){ state.view = "projects"; state.selected = id; state.tab = tab || "overview"; const p = state.projects.find(x=>x.id===id); if (p && !involved(p)) state.scope = "all"; render(); $("#detail").scrollTop = 0; }
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("[data-act]"); if (!t) return;
+  const act = t.dataset.act, id = t.dataset.id;
+  if (act === "close-overlay" && ev.target !== t) return;
+  const p = curProject();
+  const find = (col) => state[col].find(x => x.id === id);
+  switch (act) {
+    case "nav": go(t.dataset.k); break;
+    case "scope": state.scope = t.dataset.k; render(); break;
+    case "new-project": openProject(); break;
+    case "select": state.selected = id; state.tab = "overview"; state.openThread = null; render(); $("#detail").scrollTop = 0; break;
+    case "back": state.selected = null; render(); break;
+    case "filter": state.filter = t.dataset.k; render(); break;
+    case "tab": state.tab = t.dataset.k; render(); break;
+    case "close": case "close-overlay": closeModal(); break;
+    case "edit-project": openProject(find("projects")); break;
+    case "new-activity": openActivity(); break;
+    case "new-catchup": openActivity(null, true); break;
+    case "edit-activity": openActivity(find("activities")); break;
+    case "progress": openProgress(find("activities")); break;
+    case "revise": openRevise(id ? find("activities") : null); break;
+    case "new-acc": openAcc(); break;
+    case "edit-acc": openAcc(find("accomplishments")); break;
+    case "new-target": openTarget(); break;
+    case "edit-target": openTarget(find("targets")); break;
+    case "actuals": openActuals(find("targets")); break;
+    case "new-line": openLine(); break;
+    case "edit-line": openLine(find("budgetLines")); break;
+    case "new-expense": openExpense(); break;
+    case "edit-expense": openExpense(find("expenses")); break;
+    case "new-thread": openThread(t.dataset.k); break;
+    case "quick-query": openThread("query", id); break;
+    case "reply": openReply(find("threads")); break;
+    case "toggle-thread": state.openThread = state.openThread === id ? null : id; render(); break;
+    case "close-thread": write(() => upd("threads", id, {closed:true, awaiting:null}), "Marked resolved"); break;
+    case "reopen": write(() => upd("threads", id, {closed:false, awaiting: state.isAdmin ? "user" : "admin"}), "Reopened"); break;
+    case "goto-project": gotoProject(id); break;
+    case "goto-thread": { const th = find("threads"); if (th) { state.openThread = th.id; gotoProject(th.projectId, "messages"); } break; }
+    case "msgfilter": state.msgFilter = t.dataset.k; render(); break;
+    case "period": state.rep.period = t.dataset.k; render(); break;
+    case "csv": downloadCsv(); break;
+    case "copy-report": copyReport(); break;
+    case "show-uncat": state.view = "projects"; state.scope = "all"; state.cat = "none"; state.filter = "all"; render(); break;
+    case "join": {
+      const pr = find("projects");
+      const fn = fd => write(() => add("joinRequests", {projectId:pr.id, uid:state.me.id, note:fd.note.trim(), status:"pending", at:Date.now()}), "Request sent to the project leader");
+      modal("Ask to join", `<div class="aname">${esc(pr.title)}</div><div class="hint">Led by ${esc(leaderLabel(pr))}. They'll see your request on the project's Team tab.</div>
+        <div class="field"><label for="f-note">Note to the leader (optional)</label><textarea id="f-note" name="note" placeholder="e.g. I can handle the documentation and the post-activity report"></textarea></div>`, fn, "Send request");
+      break; }
+    case "approve": {
+      const r = find("joinRequests"); if (!r || !p) break;
+      const ids = [...new Set([...(p.memberIds||[]), r.uid])].filter(x => x !== p.leaderId);
+      write(async () => { await upd("projects", p.id, {memberIds:ids}); await upd("joinRequests", r.id, {status:"approved", decidedAt:Date.now()}); }, "Member added");
+      break; }
+    case "decline": write(() => upd("joinRequests", id, {status:"declined", decidedAt:Date.now()}), "Request declined"); break;
+    case "add-member": {
+      if (!p) break;
+      const opts = memberOptions("", [p.leaderId, ...(p.memberIds||[])]);
+      if (!opts) { toast("Everyone registered is already on this project."); break; }
+      const fn = fd => write(() => upd("projects", p.id, {memberIds:[...new Set([...(p.memberIds||[]), fd.uid])]}), "Member added");
+      modal("Add member", `<div class="field"><label for="f-uid">Registered user</label><select id="f-uid" name="uid">${opts}</select></div><div class="hint">Members can post updates, enter actual accomplishments and record expenses.</div>`, fn, "Add");
+      break; }
+    case "remove-member": if (p) confirmBox("Remove member?", `${esc(nameOf(id))} will no longer be able to update this project.`, "Remove", () => write(() => upd("projects", p.id, {memberIds:(p.memberIds||[]).filter(x => x !== id)}), "Member removed")); break;
+    case "leave": { const pr = find("projects"); confirmBox("Leave this project?", `You'll stop seeing “${esc(pr.title)}” under My projects and can no longer update it.`, "Leave", () => write(() => upd("projects", pr.id, {memberIds:(pr.memberIds||[]).filter(x => x !== state.me.id)}), "You left the project")); break; }
+    case "toggle-member": { const m = state.members.find(x => x.id === id); if (m) write(async () => { await api("PATCH", "/api/users/"+id, {active: m.active === false}); await refresh(); }, m.active === false ? "Access restored" : "Account deactivated"); break; }
+    case "toggle-role": { const m = state.members.find(x => x.id === id); if (!m) break;
+      const toAdmin = m.role !== "admin";
+      confirmBox(toAdmin ? "Make administrator?" : "Remove administrator role?", toAdmin ? `${esc(m.fullName)} will be able to see and change every project, send queries, manage accounts and post announcements.` : `${esc(m.fullName)} will go back to managing only the projects they lead.`, toAdmin ? "Make admin" : "Make user",
+        () => write(async () => { await api("PATCH", "/api/users/"+id, {role: toAdmin ? "admin" : "user"}); await refresh(); }, toAdmin ? "Now an administrator" : "Administrator role removed"));
+      break; }
+    case "reset-pw": { const m = state.members.find(x => x.id === id); if (!m) break;
+      const fn = fd => write(() => api("POST", "/api/users/"+id+"/password", {password:fd.password}), "Password reset. Give the new password to " + m.fullName + ".");
+      fn.validate = fd => fd.password.length < 8 ? "Use at least 8 characters." : null;
+      modal("Reset password", `<div class="aname">${esc(m.fullName)}</div><div class="hint">${esc(m.email||"")} · They'll be signed out everywhere and must sign in with this new password.</div>
+        <div class="field"><label for="f-npw">New temporary password</label><input id="f-npw" name="password" type="text" autocomplete="off" class="mono"></div>`, fn, "Reset password"); break; }
+    case "account": { const m = myDoc() || {};
+      const fn = fd => write(async () => { await api("PATCH", "/api/me", {fullName:fd.fullName, office:fd.office, position:fd.position, phone:fd.phone}); await refresh(); }, "Profile saved");
+      fn.validate = fd => !fd.fullName.trim() ? "Enter your full name." : null;
+      modal("Your account", `<div class="hint">${esc(state.me.email)}</div>
+        <div class="field"><label for="a-name">Full name</label><input id="a-name" name="fullName" value="${esc(m.fullName)}"></div>
+        <div class="field"><label for="a-off">College / office / unit</label><input id="a-off" name="office" value="${esc(m.office)}"></div>
+        <div class="row2"><div class="field"><label for="a-pos">Position</label><input id="a-pos" name="position" value="${esc(m.position)}"></div><div class="field"><label for="a-ph">Contact number</label><input id="a-ph" name="phone" value="${esc(m.phone)}"></div></div>
+        <div><button type="button" class="btn sm" data-act="change-pw">Change password…</button></div>`, fn); break; }
+    case "change-pw": {
+      const fn = fd => write(() => api("POST", "/api/me/password", {current:fd.current, next:fd.next}), "Password changed");
+      fn.validate = fd => !fd.current ? "Enter your current password." : fd.next.length < 8 ? "Use a new password of at least 8 characters." : fd.next !== fd.next2 ? "The new passwords don't match." : null;
+      modal("Change password", `<div class="field"><label for="p-cur">Current password</label><input id="p-cur" name="current" type="password" autocomplete="current-password"></div>
+        <div class="row2"><div class="field"><label for="p-new">New password</label><input id="p-new" name="next" type="password" autocomplete="new-password"></div><div class="field"><label for="p-new2">Confirm new password</label><input id="p-new2" name="next2" type="password" autocomplete="new-password"></div></div>`, fn, "Change password"); break; }
+    case "signout": signOut(); break;
+    case "authtab": state.authTab = t.dataset.k; render(); break;
+    case "print": window.print(); break;
+    case "new-ann": { const fn = fd => write(() => add("announcements", {text:fd.text.trim()}), "Announcement posted"); fn.validate = fd => !fd.text.trim() ? "Write the announcement." : null;
+      modal("Post announcement", `<div class="field"><label for="f-ann">Announcement for all users</label><textarea id="f-ann" name="text" placeholder="e.g. Q4 accomplishment reports are due on December 15. Update your actuals and expenses before then."></textarea></div>`, fn, "Post"); break; }
+    case "delete-ann": confirmBox("Delete announcement?", "It will disappear for all users.", "Delete", () => write(() => del("announcements", id), "Announcement deleted")); break;
+    case "dismiss-ann": try { localStorage.setItem("uat-ann", id); } catch(e){} renderNotice(); break;
+    case "delete-project": {
+      const pr = find("projects");
+      confirmBox("Delete project?", `“${esc(pr.title)}” and all its sub-activities, targets, budget records, updates and messages will be removed. This can't be undone.`, "Delete", async () => {
+        const ok = await write(async () => {
+          await del("projects", id);
+        }, "Project deleted");
+        if (ok) { state.selected = null; render(); }
+      }); break; }
+    case "delete-activity": { const a = find("activities"); confirmBox("Delete sub-activity?", `“${esc(a.name)}” will be removed. Updates logged under it stay, listed under the whole project.`, "Delete", () => write(() => del("activities", id), "Sub-activity deleted")); break; }
+    case "delete-acc": confirmBox("Delete status update?", "This entry will be removed from the log.", "Delete", () => write(() => del("accomplishments", id), "Update deleted")); break;
+    case "delete-target": confirmBox("Delete target?", "The indicator and its quarterly targets and actuals will be removed from reports.", "Delete", () => write(() => del("targets", id), "Target deleted")); break;
+    case "delete-line": confirmBox("Delete budget line?", "Expenses recorded against it stay in the ledger without a line.", "Delete", () => write(() => del("budgetLines", id), "Budget line deleted")); break;
+    case "delete-expense": confirmBox("Delete expense?", "The amount will be removed from utilization.", "Delete", () => write(() => del("expenses", id), "Expense deleted")); break;
+  }
+});
+document.addEventListener("change", ev => {
+  const id = ev.target.id;
+  if (id === "catSel") { state.cat = ev.target.value; render(); }
+  else if (id === "repYear") { state.rep.year = Number(ev.target.value); render(); }
+  else if (id === "repCat") { state.rep.cat = ev.target.value; render(); }
+  else if (id === "repScope") { state.rep.scope = ev.target.value; render(); }
+});
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && $("#modalRoot").innerHTML) closeModal(); });
+$("#search").addEventListener("input", ev => { state.q = ev.target.value; renderList(); });
+
+let toastT;
+function toast(msg){ const el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 2800); }
+
+render();
+init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# Render Blueprint: creates the tracker as a free web service.
+# Render asks for the three values marked "sync: false" when you first create it.
+services:
+  - type: web
+    name: tup-activity-tracker
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL          # Neon connection string (postgresql://…?sslmode=require)
+        sync: false
+      - key: ADMIN_EMAIL           # the email that becomes administrator when it registers
+        sync: false
+      - key: ALLOWED_EMAIL_DOMAINS # e.g. tup.edu.ph — leave blank to allow any email
+        sync: false
+      - key: SEED_DEMO             # "1" loads demo accounts; change to "remove" before real use
+        value: "1"
+      - key: NODE_VERSION
+        value: "22"
+      - key: PORT
+        value: "10000"
